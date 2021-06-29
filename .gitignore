@@ -1,0 +1,12 @@
+*~
+*.pyc
+.idea/
+.vscode/
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.template
+__pycache__/
+*.log
