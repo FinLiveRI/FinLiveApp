@@ -1,7 +1,5 @@
+from django.contrib.auth.models import User
 from django.db import models
-
-# Create your models here.
-from django.template.defaultfilters import default
 
 
 class Breed(models.Model):
@@ -64,7 +62,9 @@ class Animal(models.Model):
     departurereason = models.CharField(max_length=256, null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'animal'
@@ -73,6 +73,7 @@ class Animal(models.Model):
 class Weight(models.Model):
     id = models.AutoField(primary_key=True)
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     timestamp = models.DateTimeField()
     weight = models.DecimalField(max_digits=8, decimal_places=3)
     automaticmeasurement = models.BooleanField()
@@ -84,6 +85,7 @@ class Weight(models.Model):
 class Calving(models.Model):
     id = models.AutoField(primary_key=True)
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     date = models.DateField()
     assistance = models.BooleanField()
     calvingnumber = models.IntegerField()
@@ -95,6 +97,7 @@ class Calving(models.Model):
 class Insemination(models.Model):
     id = models.AutoField(primary_key=True)
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     date = models.DateField()
     bull = models.CharField(max_length=128)
     inseminationmethod = models.ForeignKey(SeedingType, on_delete=models.SET_NULL, null=True)
@@ -106,6 +109,7 @@ class Insemination(models.Model):
 class PregnancyCheck(models.Model):
     id = models.AutoField(primary_key=True)
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     date = models.DateField()
     result = models.BooleanField()
     calvingdate = models.DateField()
