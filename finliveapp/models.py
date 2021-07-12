@@ -3,7 +3,9 @@ from django.db import models
 
 
 class Breed(models.Model):
-    id = models.IntegerField(primary_key=True, unique=True)
+    id = models.AutoField(primary_key=True)
+    number = models.IntegerField(unique=True)
+    abbreviation = models.CharField(max_length=8)
     name = models.CharField(max_length=128)
 
     class Meta:
@@ -11,8 +13,9 @@ class Breed(models.Model):
 
 
 class Gender(models.Model):
-    id = models.IntegerField(primary_key=True, unique=True)
-    name = models.CharField(max_length=128)
+    id = models.AutoField(primary_key=True)
+    abbreviation = models.CharField(max_length=8)
+    name = models.CharField(max_length=64)
 
     class Meta:
         db_table = 'gender'
@@ -21,6 +24,7 @@ class Gender(models.Model):
 class Laboratory(models.Model):
     id = models.IntegerField(primary_key=True, unique=True)
     name = models.CharField(max_length=128)
+    description = models.CharField(max_length=256)
 
     class Meta:
         db_table = 'laboratory'
