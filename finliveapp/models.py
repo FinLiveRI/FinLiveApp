@@ -1,5 +1,13 @@
 from django.contrib.auth.models import User
 from django.db import models
+from finliveapp.constants import UserType
+
+
+class UserAccount(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
+    retries = models.IntegerField(default=5)
+    usertype = models.CharField(max_length=9, choices=UserType.choices(), default=UserType.VIEWER)
 
 
 class Breed(models.Model):
@@ -52,8 +60,8 @@ class Equipment(models.Model):
 
 class Organization(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=128)
-    description = models.CharField(max_length=256)
+    name = models.CharField(max_length=128, unique=True, blank=False)
+    description = models.CharField(max_length=256, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -63,12 +71,14 @@ class Organization(models.Model):
 
 class Barn(models.Model):
     id = models.AutoField(primary_key=True)
+    farmid = models.IntegerField(unique=True)
     name = models.CharField(max_length=128)
-    description = models.CharField(max_length=256)
+    description = models.CharField(max_length=256, null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'barn'
+
 
 class MilkingSystem(models.Model):
     id = models.AutoField(primary_key=True)
@@ -87,7 +97,7 @@ class Animal(models.Model):
     breed = models.ForeignKey(Breed, on_delete=models.SET_NULL, null=True)
     gender = models.ForeignKey(Gender, on_delete=models.SET_NULL, null=True)
     birthDate = models.DateField()
-    animalid = models.CharField(max_length=128)
+    animalid = models.IntegerField(unique=True)
     rfid = models.CharField(max_length=256, default="")
     barn = models.ForeignKey(Barn, on_delete=models.SET_NULL, null=True)
     arrivaldate = models.DateField()
