@@ -1,0 +1,196 @@
+openapi: "3.0.2"
+info:
+  title: FinLiveRI API
+  version: "1.0"
+components:
+  schemas:
+    animal:
+      type: object
+      required:
+        - name
+        - euid
+        - birthdate
+        - animalid
+        - organization
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        euid:
+          type: string
+        breed:
+          type: string
+        gender:
+          type: string
+        birthdate:
+          type: string
+          format: date
+        animalid:
+          type: integer
+        rfid:
+          type: string
+        arrivaldate:
+          type: string
+          format: date
+        departuredate:
+          type: string
+          format: date
+        departurereason:
+          type: string
+        organization:
+          type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: string
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_by:
+          type: string
+          readOnly: true
+    gender:
+      properties:
+        id:
+          type: integer
+          readOnly: True
+        abbreviation:
+          type: string
+        name:
+          type: string
+    breed:
+      properties:
+        id:
+          type: integer
+          readOnly: True
+        number:
+          type: integer
+        abbreviation:
+          type: string
+        name:
+          type: string
+
+
+servers:
+  - url: https://api.server.test/api/v1
+paths:
+  /animal:
+    post:
+      description: Adds one or more animals to the database
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#components/schemas/animal'
+                - $ref: '#components/schemas/animal'
+      responses:
+        '201':
+          description: Addition was succesful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#components/schemas/animal'
+    get:
+      description: Returns all animals that the user has access to
+      responses:
+        '200':
+          description: Animal list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/animal'
+  /animal/{id}:
+    get:
+      description: Returns animal information specified by the id
+      parameters:
+        - name: id
+          in: path
+          description: ID of animal
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Animal list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/animal'
+  /gender:
+    post:
+      description: Adds one or more gender to the database
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#components/schemas/gender'
+                - $ref: '#components/schemas/gender'
+      responses:
+        '201':
+          description: Addition was succesful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#components/schemas/gender'
+    get:
+      description: Returns all genders in the database
+      responses:
+        '200':
+          description: Returns all genders in the database
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/gender'
+  /breed:
+    post:
+      description: Adds one or more breed to the database
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#components/schemas/breed'
+                - $ref: '#components/schemas/breed'
+      responses:
+        '201':
+          description: Addition was succesful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#components/schemas/breed'
+    get:
+      description: Returns all breeds in the database
+      responses:
+        '200':
+          description: Returns all breeds in the database
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/breed'
+
