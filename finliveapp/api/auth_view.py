@@ -57,4 +57,6 @@ class Accounts(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-        data = request.data
+
+        # data = request.data
+        pass

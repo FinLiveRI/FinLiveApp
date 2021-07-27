@@ -61,7 +61,22 @@ class BarnsView(APIView):
 
     def get(self, request, *args, **kwargs):
         # TODO check permissions
-        user = request.user
         barns = Barn.objects.all()
         serializer = BarnSerializer(barns, many=True)
         return Response(serializer.data)
+
+
+class BarnView(APIView):
+    def get(self, request, *args, **kwargs):
+        barn = get_object_or_404(Barn, id=kwargs['id'])
+        serializer = BarnSerializer(barn)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, *args, **kwargs):
+        barn = get_object_or_404(Breed, id=kwargs['id'])
+        serializer = BarnSerializer(barn, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
