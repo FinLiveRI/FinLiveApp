@@ -2,7 +2,8 @@ from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 from finliveapp.common.utils import dictTolist
 from finliveapp.models import Animal, Organization, Barn, Breed, Gender
-from finliveapp.serializers.animal_serializers import AnimalSerializer, BreedSerializer, GenderSerializer
+from finliveapp.serializers.animal_serializers import AnimalSerializer, BreedSerializer, GenderSerializer, \
+    NewAnimalSerializer
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -24,14 +25,18 @@ class Animals(APIView):
                     organization = get_object_or_404(Organization, name=animal.get('organization').lower())
                     barn = get_object_or_404(Barn, farmid=animal.get('farmid'))
                     breed = get_object_or_404(Breed, abbreviation=animal.get('breed'))
-                    animal['oranization'] = organization
-                    animal['breed'] = breed
-                    animal['barn'] = barn
-                    serializer = AnimalSerializer(data=animal)
-                    if serializer.is_valid():
-                        serializer.save()
-                        result.append(serializer.data)
-            return Response(result, status=status.HTTP_201_CREATED)
+                    gender = get_object_or_404(Gender, abbreviation=animal.get('gender'))
+
+                    serializer = NewAnimalSerializer(data=animal)
+                    if serializer.is_valid(raise_exception=True):
+                        serializer.validated_data['organization'] = organization
+                        serializer.validated_data['barn'] = barn
+                        serializer.validated_data['breed'] = breed
+                        serializer.validated_data['gender'] = gender
+                        new_animal = Animal.objects.create(**serializer.validated_data)
+                        result.append(new_animal)
+            serializer = AnimalSerializer(result, many=True)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({'error': 'Animal creation failed'}, status=status.HTTP_400_BAD_REQUEST)
 

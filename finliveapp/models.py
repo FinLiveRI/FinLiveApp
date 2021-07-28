@@ -96,7 +96,7 @@ class Animal(models.Model):
     name = models.CharField(max_length=128)
     breed = models.ForeignKey(Breed, on_delete=models.SET_NULL, null=True)
     gender = models.ForeignKey(Gender, on_delete=models.SET_NULL, null=True)
-    birthDate = models.DateField()
+    birthdate = models.DateField()
     animalid = models.IntegerField(unique=True)
     rfid = models.CharField(max_length=256, default="")
     barn = models.ForeignKey(Barn, on_delete=models.SET_NULL, null=True)
