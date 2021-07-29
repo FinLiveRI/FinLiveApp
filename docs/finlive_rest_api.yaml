@@ -83,6 +83,8 @@ paths:
   /animal:
     post:
       description: Adds one or more animals to the database
+      tags:
+        - Animal
       requestBody:
         content:
           application/json:
@@ -103,6 +105,8 @@ paths:
                   $ref: '#components/schemas/animal'
     get:
       description: Returns all animals that the user has access to
+      tags:
+        - Animal
       responses:
         '200':
           description: Animal list
@@ -115,6 +119,8 @@ paths:
   /animal/{id}:
     get:
       description: Returns animal information specified by the id
+      tags:
+        - Animal
       parameters:
         - name: id
           in: path
@@ -124,7 +130,30 @@ paths:
             type: string
       responses:
         '200':
-          description: Animal list
+          description: Animal information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/animal'
+    patch:
+      description: Modifies animal information
+      tags:
+        - Animal
+      parameters:
+        - name: id
+          in: path
+          description: ID of animal
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/animal'
+      responses:
+        '200':
+          description: Updated animal information
           content:
             application/json:
               schema:
@@ -132,6 +161,8 @@ paths:
   /gender:
     post:
       description: Adds one or more gender to the database
+      tags:
+        - Animal
       requestBody:
         content:
           application/json:
@@ -152,6 +183,8 @@ paths:
                   $ref: '#components/schemas/gender'
     get:
       description: Returns all genders in the database
+      tags:
+        - Animal
       responses:
         '200':
           description: Returns all genders in the database
@@ -164,6 +197,8 @@ paths:
   /breed:
     post:
       description: Adds one or more breed to the database
+      tags:
+        - Animal
       requestBody:
         content:
           application/json:
@@ -184,6 +219,8 @@ paths:
                   $ref: '#components/schemas/breed'
     get:
       description: Returns all breeds in the database
+      tags:
+        - Animal
       responses:
         '200':
           description: Returns all breeds in the database
@@ -193,4 +230,45 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/breed'
-
+  /breed/{id}:
+    get:
+      description: Returns breed information specified by the id
+      tags:
+        - Animal
+      parameters:
+        - name: id
+          in: path
+          description: ID of breed
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Animal list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/breed'
+    patch:
+      description: Modifies breed information
+      tags:
+        - Animal
+      parameters:
+        - name: id
+          in: path
+          description: ID of breed
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/breed'
+      responses:
+        '200':
+          description: Updated breed information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/breed'

@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from finliveapp.models import Animal, Breed, Gender, Organization, Barn
+from finliveapp.models import Animal, Breed, Gender, Organization, Barn, Calving
 from finliveapp.serializers.management_serializer import BarnSerializer, UserAccountSerializer, OrganizationSerializer
 
 
@@ -46,3 +46,10 @@ class NewAnimalSerializer(serializers.Serializer):
     def validate(self, attrs):
         data = serializers.Serializer.validate(self, attrs)
         return data
+
+
+class CalvingSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Calving
+        fields = '__all__'
