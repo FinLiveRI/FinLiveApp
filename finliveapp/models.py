@@ -131,7 +131,7 @@ class Calving(models.Model):
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     date = models.DateField()
-    assistance = models.CharField(max_length=128, default="")
+    assistance = models.CharField(max_length=128, blank=True)
     calvingnumber = models.IntegerField()
 
     class Meta:

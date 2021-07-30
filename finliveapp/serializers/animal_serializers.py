@@ -1,4 +1,5 @@
-
+from datetime import datetime
+from django.core.validators import EMPTY_VALUES
 from rest_framework import serializers
 from finliveapp.models import Animal, Breed, Gender, Organization, Barn, Calving
 from finliveapp.serializers.management_serializer import BarnSerializer, UserAccountSerializer, OrganizationSerializer
@@ -53,3 +54,23 @@ class CalvingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Calving
         fields = '__all__'
+
+    def __init__(self, organization=None, *args, **kwargs):
+        self.organization = organization
+        super(CalvingSerializer, self).__init__(*args, **kwargs)
+
+    def to_internal_value(self, data):
+        if 'euid' in data:
+            animal = Animal.objects.get(euid=data.get('euid'), organization=self.organization)
+            data['animal'] = animal.id
+        if self.organization:
+            data['organization'] = self.organization.id
+        if 'date' in data:
+            _datetime = datetime.strptime(data.get('date')[0:10], '%Y-%m-%d')
+            data['date'] = _datetime.date()
+        if 'assistance' in data:
+            if data.get('assistance') in EMPTY_VALUES:
+                data['assistance'] = ''
+
+        result = super().to_internal_value(data)
+        return result

@@ -138,7 +138,7 @@ class CalvingsView(APIView):
         if not calvinglist:
             return Response({'error': "Calving data missing"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            serializer = CalvingSerializer(data=calvinglist, many=True)
+            serializer = CalvingSerializer(data=calvinglist, organization=organization, many=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -148,7 +148,9 @@ class CalvingsView(APIView):
             return Response({'error': 'Errors in calving data'}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, *args, **kwargs):
-        calving = Calving.objects.all()
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        organization = get_object_or_404(Organization, id=organizationid)
+        calving = Calving.objects.filter(organization=organization)
         serializer = CalvingSerializer(calving, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

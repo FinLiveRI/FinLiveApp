@@ -75,7 +75,67 @@ components:
           type: string
         name:
           type: string
-
+    calving:
+      properties:
+        id:
+          type: integer
+          readOnly: True
+        animal:
+          type: integer
+        organization:
+          type: integer
+        date:
+          type: string
+          format: date
+        assistance:
+          type: string
+        calvingnumber:
+          type: integer
+    calving_post:
+      properties:
+        euid:
+          type: string
+        animal:
+          type: integer
+        organization:
+          type: integer
+        date:
+          type: string
+          format: date
+        assistance:
+          type: string
+        calvingnumber:
+          type: integer
+    organization:
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+    barn:
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        farmid:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        organization:
+          type: integer
 
 servers:
   - url: https://api.server.test/api/v1
@@ -272,3 +332,239 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/breed'
+  /calving:
+    post:
+      description: Adds one or more calvings to the database
+      tags:
+        - Animal
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: array
+                  items:
+                    $ref: '#components/schemas/calving_post'
+                - $ref: '#components/schemas/calving_post'
+      responses:
+        '201':
+          description: Addition was succesful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#components/schemas/calving'
+    get:
+      description: Returns all calvings in the database
+      tags:
+        - Animal
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Returns all calvings in the database
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/calving'
+  /calving/{id}:
+    get:
+      description: Returns calving information specified by the id
+      tags:
+        - Animal
+      parameters:
+        - name: id
+          in: path
+          description: ID of calving
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Calving information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/calving'
+    patch:
+      description: Modifies calving information
+      tags:
+        - Animal
+      parameters:
+        - name: id
+          in: path
+          description: ID of calving
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/calving'
+      responses:
+        '200':
+          description: Updated calving information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/calving'
+  /management/barn:
+    post:
+      description: Adds one or more barns to the database
+      tags:
+        - Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#components/schemas/barn'
+      responses:
+        '201':
+          description: Addition was succesful
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/barn'
+    get:
+      description: Returns all barns in the database
+      tags:
+        - Management
+      responses:
+        '200':
+          description: Returns all barns in the database
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/barn'
+  /management/barn/{id}:
+    get:
+      description: Returns barn information specified by the id
+      tags:
+        - Management
+      parameters:
+        - name: id
+          in: path
+          description: ID of barn
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns requested barn infromation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/barn'
+    patch:
+      description: Modifies barn information
+      tags:
+        - Management
+      parameters:
+        - name: id
+          in: path
+          description: ID of barn
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/barn'
+      responses:
+        '200':
+          description: Updated barn information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/barn'
+  /management/organisations:
+    post:
+      description: Adds an organization to the database
+      tags:
+        - Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#components/schemas/organization'
+      responses:
+        '201':
+          description: Addition was succesful
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/organization'
+    get:
+      description: Returns all organizations in the database
+      tags:
+        - Management
+      responses:
+        '200':
+          description: Returns all organizations in the database
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/organization'
+  /management/organizations/{id}:
+    get:
+      description: Returns organization information specified by the id
+      tags:
+        - Management
+      parameters:
+        - name: id
+          in: path
+          description: ID of organization
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns requested organization infromation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/organization'
+    patch:
+      description: Modifies organization information
+      tags:
+        - Management
+      parameters:
+        - name: id
+          in: path
+          description: ID of organization
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/organization'
+      responses:
+        '200':
+          description: Updated organization information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/organization'
