@@ -152,8 +152,8 @@ paths:
               oneOf:
                 - type: array
                   items:
-                    $ref: '#components/schemas/animal'
-                - $ref: '#components/schemas/animal'
+                    $ref: '#/components/schemas/animal'
+                - $ref: '#/components/schemas/animal'
       responses:
         '201':
           description: Addition was succesful
@@ -162,7 +162,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#components/schemas/animal'
+                  $ref: '#/components/schemas/animal'
     get:
       description: Returns all animals that the user has access to
       tags:
@@ -230,8 +230,8 @@ paths:
               oneOf:
                 - type: array
                   items:
-                    $ref: '#components/schemas/gender'
-                - $ref: '#components/schemas/gender'
+                    $ref: '#/components/schemas/gender'
+                - $ref: '#/components/schemas/gender'
       responses:
         '201':
           description: Addition was succesful
@@ -240,7 +240,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#components/schemas/gender'
+                  $ref: '#/components/schemas/gender'
     get:
       description: Returns all genders in the database
       tags:
@@ -266,8 +266,8 @@ paths:
               oneOf:
                 - type: array
                   items:
-                    $ref: '#components/schemas/breed'
-                - $ref: '#components/schemas/breed'
+                    $ref: '#/components/schemas/breed'
+                - $ref: '#/components/schemas/breed'
       responses:
         '201':
           description: Addition was succesful
@@ -276,7 +276,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#components/schemas/breed'
+                  $ref: '#/components/schemas/breed'
     get:
       description: Returns all breeds in the database
       tags:
@@ -351,8 +351,8 @@ paths:
               oneOf:
                 - type: array
                   items:
-                    $ref: '#components/schemas/calving_post'
-                - $ref: '#components/schemas/calving_post'
+                    $ref: '#/components/schemas/calving_post'
+                - $ref: '#/components/schemas/calving_post'
       responses:
         '201':
           description: Addition was succesful
@@ -361,7 +361,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#components/schemas/calving'
+                  $ref: '#/components/schemas/calving'
     get:
       description: Returns all calvings in the database
       tags:
@@ -433,14 +433,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#components/schemas/barn'
+              $ref: '#/components/schemas/barn'
       responses:
         '201':
           description: Addition was succesful
           content:
             application/json:
               schema:
-                $ref: '#components/schemas/barn'
+                $ref: '#/components/schemas/barn'
     get:
       description: Returns all barns in the database
       tags:
@@ -505,14 +505,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#components/schemas/organization'
+              $ref: '#/components/schemas/organization'
       responses:
         '201':
           description: Addition was succesful
           content:
             application/json:
               schema:
-                $ref: '#components/schemas/organization'
+                $ref: '#/components/schemas/organization'
     get:
       description: Returns all organizations in the database
       tags:
