@@ -1,5 +1,10 @@
+import uuid
+from datetime import datetime
+
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import UniqueConstraint
+
 from finliveapp.constants import UserType
 
 
@@ -8,6 +13,8 @@ class UserAccount(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
     retries = models.IntegerField(default=5)
     usertype = models.CharField(max_length=9, choices=UserType.choices(), default=UserType.VIEWER)
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    modified = models.DateTimeField(auto_now=True, null=True, blank=True)
 
 
 class Breed(models.Model):
@@ -62,6 +69,7 @@ class Organization(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=128, unique=True, blank=False)
     description = models.CharField(max_length=256, null=True, blank=True)
+    apikey = models.CharField(max_length=64, default=uuid.uuid4)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -92,12 +100,12 @@ class MilkingSystem(models.Model):
 
 class Animal(models.Model):
     id = models.AutoField(primary_key=True)
-    euid = models.CharField(unique=True, max_length=256)
+    euid = models.CharField(max_length=256)
     name = models.CharField(max_length=128)
     breed = models.ForeignKey(Breed, on_delete=models.SET_NULL, null=True)
     gender = models.ForeignKey(Gender, on_delete=models.SET_NULL, null=True)
     birthdate = models.DateField()
-    animalid = models.IntegerField(unique=True)
+    animalid = models.IntegerField()
     rfid = models.CharField(max_length=256, default="")
     barn = models.ForeignKey(Barn, on_delete=models.SET_NULL, null=True)
     arrivaldate = models.DateField()
@@ -111,7 +119,7 @@ class Animal(models.Model):
 
     class Meta:
         db_table = 'animal'
-
+        constraints = [UniqueConstraint(fields=['euid', 'organization'], name='euid_organization_unique')]
 
 class Weight(models.Model):
     id = models.AutoField(primary_key=True)

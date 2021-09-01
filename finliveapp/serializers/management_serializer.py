@@ -26,19 +26,26 @@ class UserAccountSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'retries', 'usertype')
         read_only_fields = ('id',)
 
+    def create(self, validated_data):
+        accountdata = validated_data
+        userdata = accountdata.pop('user')
+        user = get_user_model().objects.create_user(**userdata)
+        account = UserAccount.objects.create(user=user, **accountdata)
+        return account
+
 
 class OrganizationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Organization
         fields = '__all__'
-        read_only_fields = ('id', 'created', 'modified')
+        read_only_fields = ('id', 'apikey', 'created', 'modified')
 
     def validate(self, attrs):
         data = serializers.ModelSerializer.validate(self, attrs)
         name = data.get('name', '').lower()
         if not self.instance or self.instance.name != name:
-            exists = Organization.objects.filter(name=name).count()
+            exists = Organization.objects.filter(name=name).exists()
             if exists:
                 raise serializers.ValidationError({'name': "Given name is already in use"})
         return data
