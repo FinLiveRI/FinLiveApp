@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from finliveapp.models import UserAccount
+from finliveapp.serializers.management_serializer import UserAccountSerializer
 
 
 class Login(APIView):
@@ -26,16 +27,16 @@ class Login(APIView):
 
         if user:
             if not user.is_active:
-                return Response({"Login":"Account is locked"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"Login": "Account is locked"}, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 useraccount = UserAccount.objects.get(user=user)
-                if useraccount.retries<1:
+                if useraccount.retries < 1:
                     return Response({"Login": "No login retries left"}, status=status.HTTP_401_UNAUTHORIZED)
                 else:
                     useraccount.retries = 5
                     useraccount.save()
                     refreshtoken = RefreshToken.for_user(user)
-                    return Response({'accesstoken': str(refreshtoken.access_token), 'refreshtoken': str(refreshtoken)},
+                    return Response({'access': str(refreshtoken.access_token), 'refresh': str(refreshtoken)},
                                     status=status.HTTP_200_OK)
         else:
             try:
@@ -57,6 +58,10 @@ class Accounts(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-
-        # data = request.data
-        pass
+        data = request.data
+        serializer = UserAccountSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

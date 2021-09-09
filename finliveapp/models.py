@@ -13,8 +13,13 @@ class UserAccount(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
     retries = models.IntegerField(default=5)
     usertype = models.CharField(max_length=9, choices=UserType.choices(), default=UserType.VIEWER)
-    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    modified = models.DateTimeField(auto_now=True, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True, null=True)
+    created_by = models.ForeignKey(User, related_name='user_account_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True, null=True)
+    modified_by = models.ForeignKey(User, related_name='user_account_modified_by', on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return self.user.username
 
 
 class Breed(models.Model):
@@ -22,6 +27,10 @@ class Breed(models.Model):
     number = models.IntegerField(unique=True)
     abbreviation = models.CharField(max_length=8)
     name = models.CharField(max_length=128)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='breed_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='breed_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'breed'
@@ -40,6 +49,10 @@ class Laboratory(models.Model):
     id = models.IntegerField(primary_key=True, unique=True)
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='laboratory_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='laboratory_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'laboratory'
@@ -49,6 +62,10 @@ class SeedingType(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='seedingtype_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='seedingtype_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'seedingtype'
@@ -60,6 +77,10 @@ class Equipment(models.Model):
     type = models.CharField(max_length=128)
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='equipment_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='equipment_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'equipment'
@@ -71,18 +92,34 @@ class Organization(models.Model):
     description = models.CharField(max_length=256, null=True, blank=True)
     apikey = models.CharField(max_length=64, default=uuid.uuid4)
     created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='organization_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='organization_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'organization'
 
 
+class AccountOrganization(models.Model):
+    id = models.AutoField(primary_key=True)
+    account = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    default = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'account_organization'
+
+        
 class Barn(models.Model):
     id = models.AutoField(primary_key=True)
     farmid = models.IntegerField(unique=True)
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=256, null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='barn_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='barn_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'barn'
@@ -93,6 +130,10 @@ class MilkingSystem(models.Model):
     equipment_id = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True)
     barn = models.ForeignKey(Barn, on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='milking_system_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='milking_system_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'milking_system'
@@ -129,6 +170,10 @@ class Weight(models.Model):
     weight = models.DecimalField(max_digits=8, decimal_places=3)
     automaticmeasurement = models.BooleanField()
     equipment_id = models.CharField(max_length=128, default="")
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='weight_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='weight_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'weight'
@@ -141,6 +186,10 @@ class Calving(models.Model):
     date = models.DateField()
     assistance = models.CharField(max_length=128, blank=True)
     calvingnumber = models.IntegerField()
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='calving_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='calving_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'calving'
@@ -153,6 +202,10 @@ class Insemination(models.Model):
     date = models.DateField()
     bull = models.CharField(max_length=128)
     insemination_method = models.ForeignKey(SeedingType, on_delete=models.SET_NULL, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='insemination_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='insemination_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'insemination'
@@ -165,6 +218,10 @@ class PregnancyCheck(models.Model):
     date = models.DateField()
     result = models.BooleanField()
     calvingdate = models.DateField()
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='pregnancycheck_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='pregnancycheck_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'pregnancycheck'
@@ -178,6 +235,10 @@ class Feed(models.Model):
     fresh_weight = models.DecimalField(max_digits=10, decimal_places=3)
     dry_matter_content = models.IntegerField()
     date = models.DateField()
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='feed_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='feed_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'feed'
@@ -220,6 +281,10 @@ class FeedAnalysis(models.Model):
     isovaleric_acid = models.DecimalField(max_digits=5, decimal_places=2)
     capronic_acid = models.DecimalField(max_digits=5, decimal_places=2)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='feed_analysis_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='feed_analysis_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'feed_analysis'
@@ -236,6 +301,10 @@ class Feeding(models.Model):
     feed_consumption = models.DecimalField(max_digits=6, decimal_places=3)
     feed = models.ForeignKey(Feed, on_delete=models.SET_NULL, null=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='feeding_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='feeding_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'feeding'
@@ -266,6 +335,10 @@ class Milking_Event(models.Model):
     lb_flow_duration = models.IntegerField(null=True)
     milking_system = models.ForeignKey(MilkingSystem, on_delete=models.SET_NULL, null=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='milking_event_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='milking_event_modified_by', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'milking_event'

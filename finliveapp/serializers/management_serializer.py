@@ -23,8 +23,8 @@ class UserAccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserAccount
-        fields = ('id', 'user', 'retries', 'usertype')
-        read_only_fields = ('id',)
+        fields = ('id', 'user', 'retries', 'usertype', 'created', 'modified')
+        read_only_fields = ('id', 'created', 'modified')
 
     def create(self, validated_data):
         accountdata = validated_data
