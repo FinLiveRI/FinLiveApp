@@ -3,6 +3,17 @@ info:
   title: FinLiveRI API
   version: "1.0"
 components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    BearerAuth:
+      type: http
+      scheme: bearer
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
   schemas:
     animal:
       type: object
@@ -75,6 +86,20 @@ components:
           type: string
         name:
           type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: string
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_by:
+          type: string
+          readOnly: true
     calving:
       properties:
         id:
@@ -91,6 +116,20 @@ components:
           type: string
         calvingnumber:
           type: integer
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: string
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_by:
+          type: string
+          readOnly: true
     calving_post:
       properties:
         euid:
@@ -119,9 +158,15 @@ components:
           type: string
           format: date-time
           readOnly: true
+        created_by:
+          type: string
+          readOnly: true
         modified:
           type: string
           format: date-time
+          readOnly: true
+        modified_by:
+          type: string
           readOnly: true
     barn:
       properties:
@@ -136,10 +181,93 @@ components:
           type: string
         organization:
           type: integer
-
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: string
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_by:
+          type: string
+          readOnly: true
 servers:
   - url: https://api.server.test/api/v1
 paths:
+  /auth/login:
+    post:
+      description: Login with user credentials
+      tags:
+        - Auth
+      security:
+        - BasicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login waas succesful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access:
+                    type: string
+                  refresh:
+                    type: string
+        '401':
+          description: Authorization information is missing or invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /auth/refresh:
+    post:
+      description: Refreshing accesstoken
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh:
+                  type: string
+      responses:
+        '200':
+          description: Token refresh was succesful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access:
+                    type: string
+        '401':
+          description: Authorization information is missing or invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
   /animal:
     post:
       description: Adds one or more animals to the database

@@ -27,11 +27,11 @@ class Login(APIView):
 
         if user:
             if not user.is_active:
-                return Response({"Login": "Account is locked"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"error": "Account is locked"}, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 useraccount = UserAccount.objects.get(user=user)
                 if useraccount.retries < 1:
-                    return Response({"Login": "No login retries left"}, status=status.HTTP_401_UNAUTHORIZED)
+                    return Response({"error": "No login retries left"}, status=status.HTTP_401_UNAUTHORIZED)
                 else:
                     useraccount.retries = 5
                     useraccount.save()
@@ -51,7 +51,7 @@ class Login(APIView):
                         useraccount.save()
             except ObjectDoesNotExist:
                 pass
-            return Response({'Login': "Unable to login"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': "Unable to login"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class Accounts(APIView):
