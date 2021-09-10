@@ -146,7 +146,7 @@ class Animal(models.Model):
     breed = models.ForeignKey(Breed, on_delete=models.SET_NULL, null=True)
     gender = models.ForeignKey(Gender, on_delete=models.SET_NULL, null=True)
     birthdate = models.DateField()
-    animalid = models.IntegerField()
+    animalid = models.CharField(max_length=128)
     rfid = models.CharField(max_length=256, default="")
     barn = models.ForeignKey(Barn, on_delete=models.SET_NULL, null=True)
     arrivaldate = models.DateField()
@@ -161,6 +161,7 @@ class Animal(models.Model):
     class Meta:
         db_table = 'animal'
         constraints = [UniqueConstraint(fields=['euid', 'organization'], name='euid_organization_unique')]
+
 
 class Weight(models.Model):
     id = models.AutoField(primary_key=True)
@@ -185,7 +186,7 @@ class Calving(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     date = models.DateField()
     assistance = models.CharField(max_length=128, blank=True)
-    calvingnumber = models.IntegerField()
+    parity = models.IntegerField()
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='calving_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
@@ -230,7 +231,6 @@ class PregnancyCheck(models.Model):
 class Feed(models.Model):
     id = models.AutoField(primary_key=True)
     feed_id = models.CharField(max_length=256)
-    name = models.CharField(max_length=128)
     mixing_date = models.DateField()
     fresh_weight = models.DecimalField(max_digits=10, decimal_places=3)
     dry_matter_content = models.IntegerField()
@@ -325,7 +325,7 @@ class Milking_Event(models.Model):
     rb_conductivity = models.DecimalField(max_digits=6, decimal_places=3, null=True)
     lf_conductivity = models.DecimalField(max_digits=6, decimal_places=3, null=True)
     lb_conductivity = models.DecimalField(max_digits=6, decimal_places=3, null=True)
-    somatic_cell_count = models.IntegerField(null=True)
+    somatic_cell_count = models.DecimalField(max_digits=12, decimal_places=2)
     colour = models.CharField(max_length=64, null=True)
     temperature = models.DecimalField(max_digits=4, decimal_places=2, null=True)
     total_flow_duration = models.IntegerField(null=True)
@@ -342,3 +342,113 @@ class Milking_Event(models.Model):
 
     class Meta:
         db_table = 'milking_event'
+
+
+class GasSystem(models.Model):
+    id = models.AutoField(primary_key=True)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    equipmentid = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True)
+    euid = models.CharField(max_length=256)
+    rfid = models.CharField(max_length=256, default="")
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    measurement_duration = models.IntegerField()
+    co2 = models.IntegerField()
+    ch4 = models.IntegerField()
+    o2 = models.IntegerField()
+    h2 = models.IntegerField()
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='gas_system_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='gas_system_modified_by', on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        db_table = 'gas_system'
+
+
+class MilkAnalysis(models.Model):
+    id = models.AutoField(primary_key=True)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    laboratory = models.ForeignKey(Laboratory, on_delete=models.SET_NULL, null=True)
+    milking_event = models.ForeignKey(Milking_Event, on_delete=models.SET_NULL, null=True)
+    farmid = models.ForeignKey(Barn, on_delete=models.SET_NULL, null=True)
+    euid = models.CharField(max_length=256)
+    protein = models.DecimalField(max_digits=5, decimal_places=2)
+    fat = models.DecimalField(max_digits=5, decimal_places=2)
+    lactose = models.DecimalField(max_digits=5, decimal_places=2)
+    somatic_cell_count = models.DecimalField(max_digits=12, decimal_places=2)
+    time_stamp = models.DateTimeField()
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='milk_analysis_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='milk_analysis_modified_by', on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        db_table = 'milk_analysis'
+
+
+class BloodSample(models.Model):
+    id = models.AutoField(primary_key=True)
+    euid = models.CharField(max_length=256)
+    sampleid = models.CharField(max_length=256)
+    animalid = models.CharField(max_length=128)
+    time_stamp = models.DateTimeField()
+    glucose = models.IntegerField()
+    nefa = models.IntegerField()
+    bhba = models.IntegerField()
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    laboratory = models.ForeignKey(Laboratory, on_delete=models.SET_NULL, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='blood_sample_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='blood_sample_modified_by', on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        db_table = 'blood_sample'
+
+
+class ManureSample(models.Model):
+    id = models.AutoField(primary_key=True)
+    euid = models.CharField(max_length=256)
+    sampleid = models.CharField(max_length=256)
+    sample_date = models.DateField()
+    analysis_date = models.DateField()
+    analyzer = models.CharField(max_length=128)
+    nirs_n = models.IntegerField()
+    nirs_ndf = models.IntegerField()
+    nirs_indf = models.IntegerField()
+    nirs_omd = models.IntegerField()
+    nirs_dmi = models.IntegerField()
+    nirs_gh = models.IntegerField()
+    nirs_nh = models.IntegerField()
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    laboratory = models.ForeignKey(Laboratory, on_delete=models.SET_NULL, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='manure_sample_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='manure_sample_modified_by', on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        db_table = 'manure_sample'
+
+
+class MirSpectrum(models.Model):
+    id = models.AutoField(primary_key=True)
+    euid = models.CharField(max_length=256)
+    sampleid = models.CharField(max_length=256)
+    sample_date = models.DateField()
+    analysis_date = models.DateField()
+    analyzer = models.CharField(max_length=128)
+    exportid = models.CharField(max_length=128)
+    milking_time = models.IntegerField()
+    absorbance_value = models.IntegerField()
+    milking_event = models.ForeignKey(Milking_Event, on_delete=models.SET_NULL, null=True)
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    laboratory = models.ForeignKey(Laboratory, on_delete=models.SET_NULL, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='mir_spectrum_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='mir_spectrum_modified_by', on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        db_table = 'mir_spectrum'
