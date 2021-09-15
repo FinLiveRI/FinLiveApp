@@ -1,4 +1,5 @@
 import logging
+import json
 
 from django.contrib import auth
 from django.contrib.auth import get_user_model
@@ -59,9 +60,36 @@ class Accounts(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        serializer = UserAccountSerializer(data=data)
+        serializer = UserAccountSerializer(data=data, editor=request.user)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, *args, **kwargs):
+        # data = {}
+        # header = self.request.META.get("HTTP_X_DATA", None)
+        # if header:
+        #    data = json.loads(header)
+        data = UserAccount.objects.all()
+        serializer = UserAccountSerializer(data, many=True)
+        return Response(serializer.data)
+
+
+class Account(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        account = UserAccount.objects.get(user_id=kwargs['id'])
+        serializer = UserAccountSerializer(account)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, *args, **kwargs):
+        account = UserAccount.objects.get(user_id=kwargs['id'])
+        serializer = UserAccountSerializer(account, data=request.data, partial=True, editor=request.user)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

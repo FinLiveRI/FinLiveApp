@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.validators import EMPTY_VALUES
 from rest_framework import serializers
 
 from finliveapp.models import UserAccount, Organization, Barn
@@ -23,15 +24,36 @@ class UserAccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserAccount
-        fields = ('id', 'user', 'retries', 'usertype', 'created', 'modified')
-        read_only_fields = ('id', 'created', 'modified')
+        fields = ('user', 'retries', 'usertype', 'created', 'modified', 'created_by', 'modified_by')
+        read_only_fields = ('created', 'modified')
+
+    def __init__(self, *args, **kwargs):
+        self.editor = kwargs.pop('editor', None)
+        super(UserAccountSerializer, self).__init__(*args, **kwargs)
+
+    def validate(self, attrs):
+        data = serializers.ModelSerializer.validate(self, attrs)
+        return data
 
     def create(self, validated_data):
         accountdata = validated_data
+        accountdata['created_by'] = self.editor
+        accountdata['modified_by'] = self.editor
         userdata = accountdata.pop('user')
         user = get_user_model().objects.create_user(**userdata)
         account = UserAccount.objects.create(user=user, **accountdata)
         return account
+
+    def update(self, instance, validated_data):
+        if 'user' in validated_data:
+            nested_serializer = self.fields['user']
+            nested_instance = instance.user
+            nested_data = validated_data.pop('user')
+            nested_serializer.update(nested_instance, nested_data)
+
+        data = validated_data
+        data['modified_by'] = self.editor
+        return super(UserAccountSerializer, self).update(instance, data)
 
 
 class OrganizationSerializer(serializers.ModelSerializer):

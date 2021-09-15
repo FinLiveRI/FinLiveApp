@@ -73,7 +73,7 @@ class BarnView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request, *args, **kwargs):
-        barn = get_object_or_404(Breed, id=kwargs['id'])
+        barn = get_object_or_404(Barn, id=kwargs['id'])
         serializer = BarnSerializer(barn, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
