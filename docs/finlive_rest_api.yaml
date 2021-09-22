@@ -15,6 +15,37 @@ components:
       in: header
       name: X-API-Key
   schemas:
+    user:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        is_superuser:
+          type: boolean
+        is_staff:
+          type: boolean
+        is_active:
+          type: boolean
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
     animal:
       type: object
       required:

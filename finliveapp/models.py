@@ -73,10 +73,10 @@ class SeedingType(models.Model):
 
 class Equipment(models.Model):
     id = models.AutoField(primary_key=True)
-    equipmentid = models.IntegerField()
+    equipmentid = models.CharField(max_length=64)
     type = models.CharField(max_length=128)
     name = models.CharField(max_length=128)
-    description = models.CharField(max_length=256)
+    description = models.CharField(max_length=256, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='equipment_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
@@ -127,7 +127,7 @@ class Barn(models.Model):
 
 class MilkingSystem(models.Model):
     id = models.AutoField(primary_key=True)
-    equipment_id = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True)
+    equipment = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True)
     barn = models.ForeignKey(Barn, on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
@@ -235,6 +235,7 @@ class Feed(models.Model):
     fresh_weight = models.DecimalField(max_digits=10, decimal_places=3)
     dry_matter_content = models.IntegerField()
     date = models.DateField()
+    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='feed_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)

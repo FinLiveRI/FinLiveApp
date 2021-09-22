@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import EMPTY_VALUES
 from rest_framework import serializers
 
-from finliveapp.models import UserAccount, Organization, Barn
+from finliveapp.models import UserAccount, Organization, Barn, MilkingSystem, Equipment, SeedingType, Laboratory
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -83,3 +83,54 @@ class BarnSerializer(serializers.ModelSerializer):
         model = Barn
         fields = '__all__'
         read_only_fields = ('id', 'created', 'modified')
+
+
+class EquipmentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Equipment
+        fields = '__all__'
+        read_only_fields = ('id', 'created', 'modified')
+
+
+class MilkingsystemSerializer(serializers.ModelSerializer):
+    equipment = EquipmentSerializer()
+    barn = BarnSerializer()
+    organization = OrganizationSerializer()
+
+    class Meta:
+        model = MilkingSystem
+        fields = '__all__'
+        read_only_fields = ('id', 'created', 'modified')
+
+
+class MilkingsystemViewSerializer(serializers.ModelSerializer):
+    equipment = serializers.SlugRelatedField(slug_field='equipment.name', read_only=True)
+    barn = serializers.SlugRelatedField(slug_field='barn.name', read_only=True)
+    organization = serializers.SlugRelatedField(slug_field='organization.name', read_only=True)
+
+    class Meta:
+        model = MilkingSystem
+        fields = '__all__'
+        read_only_fields = ('id', 'created', 'modified')
+
+
+class SeedingtypeSerializer(serializers.ModelSerializer):
+    created_by = UserAccountSerializer(read_only=True)
+    modified_by = UserAccountSerializer(read_only=True)
+
+    class Meta:
+        model = SeedingType
+        fields = ('id', 'name', 'description', 'created', 'created_by', 'modified', 'modified_by')
+        read_only_fields = ('id', 'created', 'modified')
+
+
+class LaboratorySerializer(serializers.ModelSerializer):
+    created_by = UserAccountSerializer(read_only=True)
+    modified_by = UserAccountSerializer(read_only=True)
+
+    class Meta:
+        model = Laboratory
+        fields = ('id', 'name', 'description', 'created', 'created_by', 'modified', 'modified_by')
+        read_only_fields = ('id', 'created', 'modified')
+

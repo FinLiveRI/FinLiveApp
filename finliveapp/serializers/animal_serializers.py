@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.core.validators import EMPTY_VALUES
 from rest_framework import serializers
-from finliveapp.models import Animal, Breed, Gender, Organization, Barn, Calving
+from finliveapp.models import Animal, Breed, Gender, Organization, Barn, Calving, SeedingType
 from finliveapp.serializers.management_serializer import BarnSerializer, UserAccountSerializer, OrganizationSerializer
 
 
@@ -33,6 +33,20 @@ class AnimalSerializer(serializers.ModelSerializer):
                   'created', 'modified', 'barn', 'breed', 'gender', 'organization', 'created_by', 'modified_by']
         read_only_fields = ['id', 'created', 'modified', 'created_by', 'modified_by']
 
+
+class AnimalViewSerializer(serializers.ModelSerializer):
+    breed = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    barn = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    organization = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    gender = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    created_by = serializers.SlugRelatedField(slug_field='user.username', read_only=True)
+    modified_by = serializers.SlugRelatedField(slug_field='user.username', read_only=True)
+
+    class Meta:
+        model = Animal
+        fields = ['id', 'euid', 'name', 'birthdate', 'animalid', 'arrivaldate', 'departuredate', 'departurereason',
+                  'created', 'modified', 'barn', 'breed', 'gender', 'organization', 'created_by', 'modified_by']
+        read_only_fields = ['id', 'created', 'modified', 'barn', 'breed', 'gender', 'organization', 'created_by', 'modified_by']
 
 class NewAnimalSerializer(serializers.Serializer):
     euid = serializers.CharField(allow_blank=False, max_length=256)
@@ -74,3 +88,11 @@ class CalvingSerializer(serializers.ModelSerializer):
 
         result = super().to_internal_value(data)
         return result
+
+
+class SeedingtypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SeedingType
+        fields = '__all__'
+        read_only_fields = ('id', 'created', 'modified')
