@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import EMPTY_VALUES
+from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -13,7 +14,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from finliveapp.models import UserAccount
+from finliveapp.common.utils import dictTolist
+from finliveapp.models import UserAccount, Organization
 from finliveapp.serializers.management_serializer import UserAccountSerializer
 
 
@@ -60,7 +62,12 @@ class Accounts(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        serializer = UserAccountSerializer(data=data, editor=request.user)
+        organization = None
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        if organizationid not in EMPTY_VALUES:
+            organization = get_object_or_404(Organization, id=organizationid)
+        serializer = UserAccountSerializer(data=data, **{'editor': request.user,
+                                                         'organization': organization})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.validated_data, status=status.HTTP_201_CREATED)

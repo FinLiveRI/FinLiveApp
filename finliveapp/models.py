@@ -35,6 +35,9 @@ class Breed(models.Model):
     class Meta:
         db_table = 'breed'
 
+    def __str__(self):
+        return "%s (%s)" % (self.name, self.abbreviation)
+
 
 class Gender(models.Model):
     id = models.AutoField(primary_key=True)
@@ -43,6 +46,9 @@ class Gender(models.Model):
 
     class Meta:
         db_table = 'gender'
+
+    def __str__(self):
+        return "%s (%s)" % (self.name, self.abbreviation)
 
 
 class Laboratory(models.Model):
@@ -56,6 +62,9 @@ class Laboratory(models.Model):
 
     class Meta:
         db_table = 'laboratory'
+
+    def __str__(self):
+        return self.name
 
 
 class SeedingType(models.Model):
@@ -99,6 +108,9 @@ class Organization(models.Model):
     class Meta:
         db_table = 'organization'
 
+    def __str__(self):
+        return self.name
+
 
 class AccountOrganization(models.Model):
     id = models.AutoField(primary_key=True)
@@ -123,6 +135,9 @@ class Barn(models.Model):
 
     class Meta:
         db_table = 'barn'
+
+    def __str__(self):
+        return self.name
 
 
 class MilkingSystem(models.Model):
@@ -161,6 +176,9 @@ class Animal(models.Model):
     class Meta:
         db_table = 'animal'
         constraints = [UniqueConstraint(fields=['euid', 'organization'], name='euid_organization_unique')]
+
+    def __str__(self):
+        return self.name
 
 
 class Weight(models.Model):

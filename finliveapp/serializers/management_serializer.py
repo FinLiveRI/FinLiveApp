@@ -2,7 +2,8 @@ from django.contrib.auth import get_user_model
 from django.core.validators import EMPTY_VALUES
 from rest_framework import serializers
 
-from finliveapp.models import UserAccount, Organization, Barn, MilkingSystem, Equipment, SeedingType, Laboratory
+from finliveapp.models import UserAccount, Organization, Barn, MilkingSystem, Equipment, SeedingType, Laboratory, \
+    AccountOrganization
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -29,10 +30,23 @@ class UserAccountSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         self.editor = kwargs.pop('editor', None)
+        self.organization = kwargs.pop('organization', None)
         super(UserAccountSerializer, self).__init__(*args, **kwargs)
 
     def validate(self, attrs):
         data = serializers.ModelSerializer.validate(self, attrs)
+        validation_errors = {}
+        if self.organization not in EMPTY_VALUES:
+            if not self.editor.is_superuser:
+                if not AccountOrganization.objects.filter(organization=self.organization,
+                                                          account=self.editor.useraccount).exists():
+                    validation_errors['organizations'] = "Not valid organization"
+            else:
+                if not AccountOrganization.objects.filter(organization=self.organization).exists():
+                    validation_errors['organizations'] = "Not valid organization"
+        if validation_errors not in EMPTY_VALUES:
+            raise serializers.ValidationError(validation_errors)
+
         return data
 
     def create(self, validated_data):
@@ -42,6 +56,8 @@ class UserAccountSerializer(serializers.ModelSerializer):
         userdata = accountdata.pop('user')
         user = get_user_model().objects.create_user(**userdata)
         account = UserAccount.objects.create(user=user, **accountdata)
+        if self.organization not in EMPTY_VALUES:
+            AccountOrganization.objects.create(account=account, organization=self.organization)
         return account
 
     def update(self, instance, validated_data):
@@ -79,6 +95,10 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
 
 class BarnSerializer(serializers.ModelSerializer):
+    #organization = OrganizationSerializer()
+    #created_by = UserAccountSerializer()
+    #modified_by = UserAccountSerializer()
+
     class Meta:
         model = Barn
         fields = '__all__'

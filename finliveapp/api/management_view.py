@@ -52,7 +52,10 @@ class BarnsView(APIView):
     # TODO add decorators
     def post(self, request, *args, **kwargs):
         data = request.data
-        user = request.user
+        user = request.user.useraccount
+        if user:
+            data['created_by'] = user.id
+            data['modified_by'] = user.id
         serializer = BarnSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
