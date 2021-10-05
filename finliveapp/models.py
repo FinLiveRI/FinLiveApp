@@ -80,21 +80,6 @@ class SeedingType(models.Model):
         db_table = 'seedingtype'
 
 
-class Equipment(models.Model):
-    id = models.AutoField(primary_key=True)
-    equipmentid = models.CharField(max_length=64)
-    type = models.CharField(max_length=128)
-    name = models.CharField(max_length=128)
-    description = models.CharField(max_length=256, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, related_name='equipment_created_by', on_delete=models.SET_NULL, null=True)
-    modified = models.DateTimeField(auto_now=True)
-    modified_by = models.ForeignKey(User, related_name='equipment_modified_by', on_delete=models.SET_NULL, null=True)
-
-    class Meta:
-        db_table = 'equipment'
-
-
 class Organization(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=128, unique=True, blank=False)
@@ -110,6 +95,23 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Equipment(models.Model):
+    id = models.AutoField(primary_key=True)
+    equipmentid = models.IntegerField()
+    type = models.CharField(max_length=128)
+    name = models.CharField(max_length=128)
+    description = models.CharField(max_length=256, blank=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='equipment_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='equipment_modified_by', on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        db_table = 'equipment'
+        constraints = [UniqueConstraint(fields=['equipmentid', 'organization'], name='equipment_organization_unique')]
 
 
 class AccountOrganization(models.Model):
@@ -161,7 +163,7 @@ class Animal(models.Model):
     breed = models.ForeignKey(Breed, on_delete=models.SET_NULL, null=True)
     gender = models.ForeignKey(Gender, on_delete=models.SET_NULL, null=True)
     birthdate = models.DateField()
-    animalid = models.CharField(max_length=128)
+    animalid = models.IntegerField()
     rfid = models.CharField(max_length=256, default="")
     barn = models.ForeignKey(Barn, on_delete=models.SET_NULL, null=True)
     arrivaldate = models.DateField()
@@ -248,7 +250,7 @@ class PregnancyCheck(models.Model):
 
 class Feed(models.Model):
     id = models.AutoField(primary_key=True)
-    feed_id = models.CharField(max_length=256)
+    feedid = models.IntegerField()
     mixing_date = models.DateField()
     fresh_weight = models.DecimalField(max_digits=10, decimal_places=3)
     dry_matter_content = models.IntegerField()
@@ -320,6 +322,7 @@ class Feeding(models.Model):
     feed_consumption = models.DecimalField(max_digits=6, decimal_places=3)
     feed = models.ForeignKey(Feed, on_delete=models.SET_NULL, null=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
+    barn = models.ForeignKey(Barn, on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='feeding_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)

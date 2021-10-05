@@ -44,6 +44,8 @@ class UserAccountSerializer(serializers.ModelSerializer):
             else:
                 if not AccountOrganization.objects.filter(organization=self.organization).exists():
                     validation_errors['organizations'] = "Not valid organization"
+        else:
+            validation_errors['organizations'] = "Not valid organization"
         if validation_errors not in EMPTY_VALUES:
             raise serializers.ValidationError(validation_errors)
 
@@ -104,24 +106,69 @@ class BarnSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('id', 'created', 'modified')
 
+    def __init__(self, *args, **kwargs):
+        self.editor = kwargs.pop('editor', None)
+        super(BarnSerializer, self).__init__(*args, **kwargs)
+
+    def create(self, validated_data):
+        data = validated_data
+        data['created_by'] = self.editor
+        data['modified_by'] = self.editor
+        return data
+
+    def update(self, instance, validated_data):
+        data = validated_data
+        data['modified_by'] = self.editor
+        return super(BarnSerializer, self).update(instance, data)
+
 
 class EquipmentSerializer(serializers.ModelSerializer):
+    # organization = OrganizationSerializer(read_only=True)
+    # created_by = UserSerializer(read_only=True)
+    # modified_by = UserSerializer(read_only=True)
 
     class Meta:
         model = Equipment
         fields = '__all__'
         read_only_fields = ('id', 'created', 'modified')
 
+    def __init__(self, *args, **kwargs):
+        #self.editor = kwargs.pop('editor', None)
+        #self.organization = kwargs.pop('organization', None)
+        super(EquipmentSerializer, self).__init__(*args, **kwargs)
+
+    def validate(self, attrs):
+        data = serializers.ModelSerializer.validate(self, attrs)
+        return data
+
+    # def create(self, validated_data):
+    #     data = validated_data
+    #     data['created_by'] = self.editor
+    #     data['modified_by'] = self.editor
+    #     data['organization'] = self.organization
+    #     return super(EquipmentSerializer, self).create(data)
+
+    def update(self, instance, validated_data):
+        data = validated_data
+        data['modified_by'] = self.editor
+        return super(EquipmentSerializer, self).update(instance, data)
+
 
 class MilkingsystemSerializer(serializers.ModelSerializer):
     equipment = EquipmentSerializer()
     barn = BarnSerializer()
     organization = OrganizationSerializer()
+    created_by = UserAccountSerializer()
+    modified_by = UserAccountSerializer()
 
     class Meta:
         model = MilkingSystem
         fields = '__all__'
         read_only_fields = ('id', 'created', 'modified')
+
+    def __init__(self, *args, **kwargs):
+        self.editor = kwargs.pop('editor', None)
+        super(MilkingsystemSerializer, self).__init__(*args, **kwargs)
 
 
 class MilkingsystemViewSerializer(serializers.ModelSerializer):
@@ -144,6 +191,10 @@ class SeedingtypeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'description', 'created', 'created_by', 'modified', 'modified_by')
         read_only_fields = ('id', 'created', 'modified')
 
+    def __init__(self, *args, **kwargs):
+        self.editor = kwargs.pop('editor', None)
+        super(SeedingtypeSerializer, self).__init__(*args, **kwargs)
+
 
 class LaboratorySerializer(serializers.ModelSerializer):
     created_by = UserAccountSerializer(read_only=True)
@@ -154,3 +205,6 @@ class LaboratorySerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'description', 'created', 'created_by', 'modified', 'modified_by')
         read_only_fields = ('id', 'created', 'modified')
 
+    def __init__(self, *args, **kwargs):
+        self.editor = kwargs.pop('editor', None)
+        super(LaboratorySerializer, self).__init__(*args, **kwargs)

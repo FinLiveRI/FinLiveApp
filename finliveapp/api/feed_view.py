@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 
 from finliveapp.common.utils import dictTolist
 from finliveapp.models import Animal, Barn, Feed, FeedAnalysis, Organization
-from finliveapp.serializers.feed_serializers import FeedSerializer
+from finliveapp.serializers.feed_serializers import FeedSerializer, FeedingSerializer
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -14,7 +14,7 @@ class FeedsView(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        user = request.user.useraccount
+        user = request.user
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         organization = get_object_or_404(Organization, id=organizationid)
         result = []
@@ -25,13 +25,13 @@ class FeedsView(APIView):
                     if 'organization' not in feed:
                         feed['organization'] = organization
                     else:
-                        feed['organization'] = get_object_or_404(Organization, id=feed.get('organization'))
-                    feed['modified_by'] = user
-                    feed['created_by'] = user
+                        feed['organization'] = get_object_or_404(Organization, id=feed.get('organization')).id
+                    feed['modified_by'] = user.id
+                    feed['created_by'] = user.id
                     feedserializer = FeedSerializer(data=feed)
-                    if feedserializer.is_valid():
-                        newfeed = feedserializer.save()
-                        result.append(newfeed.data)
+                    if feedserializer.is_valid(raise_exception=True):
+                        feedserializer.save()
+                        result.append(feedserializer.data)
             return Response(result, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({'error': 'Animal creation failed'}, status=status.HTTP_400_BAD_REQUEST)
@@ -56,5 +56,21 @@ class FeedView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FeedingView(APIView):
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        user = request.user
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        result = []
+        feedinglist = dictTolist(data)
+        serializer = FeedingSerializer(data=data, **{'editor': request.user, 'organization': organizationid}, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

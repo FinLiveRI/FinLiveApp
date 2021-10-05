@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from finliveapp.common.utils import dictTolist
+from finliveapp.decorators.access import check_organization
 from finliveapp.models import UserAccount, Organization
 from finliveapp.serializers.management_serializer import UserAccountSerializer
 
@@ -60,6 +60,7 @@ class Login(APIView):
 class Accounts(APIView):
     permission_classes = (IsAuthenticated,)
 
+    @check_organization()
     def post(self, request, *args, **kwargs):
         data = request.data
         organization = None
@@ -79,6 +80,7 @@ class Accounts(APIView):
         # header = self.request.META.get("HTTP_X_DATA", None)
         # if header:
         #    data = json.loads(header)
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
         data = UserAccount.objects.all()
         serializer = UserAccountSerializer(data, many=True)
         return Response(serializer.data)
@@ -92,9 +94,16 @@ class Account(APIView):
         serializer = UserAccountSerializer(account)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @check_organization()
     def patch(self, request, *args, **kwargs):
+        data = request.data
+        organization = None
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        if organizationid not in EMPTY_VALUES:
+            organization = get_object_or_404(Organization, id=organizationid)
         account = UserAccount.objects.get(user_id=kwargs['id'])
-        serializer = UserAccountSerializer(account, data=request.data, partial=True, editor=request.user)
+        serializer = UserAccountSerializer(account, data=data, partial=True,
+                                           editor=request.user, organization=organization)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

@@ -108,7 +108,11 @@ class EquipmentsView(APIView):
     # TODO add decorators
     def post(self, request, *args, **kwargs):
         data = request.data
-        user = request.user
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        organization = get_object_or_404(Organization, id=organizationid)
+        data['organization'] = organization.id
+        data['created_by'] = request.user.id
+        data['modified_by'] = request.user.id
         serializer = EquipmentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
