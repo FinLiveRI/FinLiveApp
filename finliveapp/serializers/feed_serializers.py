@@ -51,7 +51,7 @@ class FeedingSerializer(serializers.ModelSerializer):
                                                      name=data.get('organization').lower())
                     data['organization'] = organization.id
                 else:
-                    data['organization_id'] = self.organization
+                    data['organization'] = self.organization
             except Exception:
                 raise serializers.ValidationError({'organization': "Organization mismatch"})
         if 'animalid' in data:

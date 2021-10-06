@@ -2,7 +2,7 @@ from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 
 from finliveapp.common.utils import dictTolist
-from finliveapp.models import Animal, Barn, Feed, FeedAnalysis, Organization
+from finliveapp.models import Animal, Barn, Feed, FeedAnalysis, Organization, Feeding
 from finliveapp.serializers.feed_serializers import FeedSerializer, FeedingSerializer
 
 from rest_framework import status
@@ -74,3 +74,9 @@ class FeedingView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, *args, **kwargs):
+        # organizationid = self.request.META.get('HTTP_X_ORG', None)
+        feeds = Feeding.objects.all()
+        serializer = FeedingSerializer(feeds, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
