@@ -9,8 +9,6 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-
-# TODO Feeding event
 # TODO Milking event
 # TODO Insemination event
 # TODO pregnancy check event

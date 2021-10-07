@@ -46,6 +46,30 @@ components:
           type: string
           format: date-time
           readOnly: true
+    useraccount:
+      type: object
+      properties:
+        user:
+          type: integer
+          description: user id
+        usertype:
+          type: string
+          description: Possible values 'SUPERUSER', 'ADMIN', 'EDITOR', 'VIEWER'
+        retries:
+          type: integer
+          description: Allowed login retries
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: string
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_by:
+          type: string
     animal:
       type: object
       required:
@@ -212,6 +236,58 @@ components:
           type: string
         organization:
           type: integer
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: string
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_by:
+          type: string
+          readOnly: true
+    equipment:
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        equipmentid:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        organization:
+          type: integer
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: string
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_by:
+          type: string
+          readOnly: true
+    laboratory:
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        description:
+          type: string
         created:
           type: string
           format: date-time
@@ -413,6 +489,48 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/gender'
+  /gender/{id}:
+    get:
+      description: Returns gender information specified by the id
+      tags:
+        - Animal
+      parameters:
+        - name: id
+          in: path
+          description: ID of gender
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Gender information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gender'
+    patch:
+      description: Modifies gender information
+      tags:
+        - Animal
+      parameters:
+        - name: id
+          in: path
+          description: ID of gender
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/gender'
+      responses:
+        '200':
+          description: Updated gender information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gender'
   /breed:
     post:
       description: Adds one or more breed to the database
@@ -655,6 +773,108 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/barn'
+  /management/equipments:
+    post:
+      description: Adds a piece of equipment to the database
+      tags:
+        - Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/equipment'
+      responses:
+        '201':
+          description: Addition was succesful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/equipment'
+    get:
+      description: Returns all equipment in the database
+      tags:
+        - Management
+      responses:
+        '200':
+          description: Returns all equipment in the database
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/equipment'
+  /management/laboratory:
+    post:
+      description: Adds one or more laboratories to the database
+      tags:
+        - Management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/laboratory'
+      responses:
+        '201':
+          description: Addition was succesful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/laboratory'
+    get:
+      description: Returns all laboratories in the database
+      tags:
+        - Management
+      responses:
+        '200':
+          description: Returns all laboratories in the database
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/laboratory'
+  /management/laboratory/{id}:
+    get:
+      description: Returns laboratory information specified by the id
+      tags:
+        - Management
+      parameters:
+        - name: id
+          in: path
+          description: ID of laboratory
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns requested laboratory infromation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/laboratory'
+    patch:
+      description: Modifies laboratory information
+      tags:
+        - Management
+      parameters:
+        - name: id
+          in: path
+          description: ID of laboratory
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/laboratory'
+      responses:
+        '200':
+          description: Updated laboratory information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/laboratory'
   /management/organisations:
     post:
       description: Adds an organization to the database

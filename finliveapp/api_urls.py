@@ -1,6 +1,6 @@
 from django.urls import path, re_path
 
-from finliveapp.api import auth_view, animal_view, feed_view, event_view, management_view
+from finliveapp.api import auth_view, animal_view, feed_view, event_view, management_view, charts_view
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = ([
@@ -11,9 +11,11 @@ urlpatterns = ([
     re_path(r'v1/breed$', animal_view.BreedsView.as_view(), name='breeds'),
     re_path(r'v1/breed/(?P<id>[0-9]+)$', animal_view.BreedView.as_view(), name='breed'),
     re_path(r'v1/calving$', event_view.CalvingsView.as_view(), name='calvings'),
-    re_path(r'v1/gender$', animal_view.GenderView.as_view(), name='gender'),
+    path(r'v1/gender', animal_view.GendersView.as_view(), name='genders'),
+    re_path(r'v1/gender/(?P<id>[0-9]+)$', animal_view.GenderView.as_view(), name='gender'),
     re_path(r'v1/seedingtype$', animal_view.SeedingtypesView.as_view(), name='seedingtypes'),
     re_path(r'v1/seedingtype/(?P<id>[0-9]+)$', animal_view.SeedingtypeView.as_view(), name='seedingtype'),
+    path(r'v1/charts/feedingduration', charts_view.FeedingDuration.as_view(), name='feedingduration'),
     re_path(r'v1/feeding/feed$', feed_view.FeedsView.as_view(), name='feeds'),
     re_path(r'v1/feeding/feed/(?P<id>[0-9]+)$', feed_view.FeedView.as_view(), name='feed'),
     path(r'v1/feeding/feeding', feed_view.FeedingView.as_view(), name='feedings'),
