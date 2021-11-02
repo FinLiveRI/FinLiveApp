@@ -13,7 +13,7 @@ components:
     ApiKeyAuth:
       type: apiKey
       in: header
-      name: X-API-Key
+      name: Authorization
   schemas:
     user:
       type: object
@@ -70,6 +70,27 @@ components:
           readOnly: true
         modified_by:
           type: string
+    accountwithuserdata:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/user'
+        retries:
+          type: integer
+        usertype:
+          type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: integer
+        modified_by:
+          type: integer
     animal:
       type: object
       required:
@@ -302,8 +323,108 @@ components:
         modified_by:
           type: string
           readOnly: true
+    feed:
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        mixing_date:
+          type: string
+          format: date
+        fresh_weight:
+          type: number
+        dry_matter_content:
+          type: integer
+        date:
+          type: string
+          format: date
+        feedid:
+          type: integer
+        organization:
+          type: integer
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: string
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_by:
+          type: string
+          readOnly: true
+    feeding:
+      properties:
+        visit_start_time:
+          type: string
+          format: date-time
+        visit_end_time:
+          type: string
+          format: date-time
+        visit_duration:
+          type: integer
+        feed_weight:
+          type: number
+        feed_consumption:
+          type: number
+        animal_id:
+          type: integer
+        equipmentid:
+          type: integer
+        feedid:
+          type: integer
+        organization_id:
+          type: integer
+        farmid:
+          type: integer
+    feedingoutput:
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        visit_start_time:
+          type: string
+          format: date-time
+        visit_end_time:
+          type: string
+          format: date-time
+        visit_duration:
+          type: integer
+        feed_weight:
+          type: number
+        feed_consumption:
+          type: number
+        animal_id:
+          type: integer
+        equipment_id:
+          type: integer
+        feed_id:
+          type: integer
+        organization_id:
+          type: integer
+        barn_id:
+          type: integer
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: string
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_by:
+          type: string
+          readOnly: true
 servers:
   - url: https://api.server.test/api/v1
+security:
+  - BearerAuth: []
 paths:
   /auth/login:
     post:
@@ -380,6 +501,15 @@ paths:
       description: Adds one or more animals to the database
       tags:
         - Animal
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
@@ -402,6 +532,15 @@ paths:
       description: Returns all animals that the user has access to
       tags:
         - Animal
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Animal list
@@ -423,6 +562,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Animal information
@@ -434,6 +579,8 @@ paths:
       description: Modifies animal information
       tags:
         - Animal
+      security:
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -441,6 +588,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
@@ -579,6 +732,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Animal list
@@ -614,6 +773,8 @@ paths:
       description: Adds one or more calvings to the database
       tags:
         - Animal
+      security:
+        - ApiKeyAuth: []
       parameters:
         - name: x-org
           in: header
@@ -643,6 +804,8 @@ paths:
       description: Returns all calvings in the database
       tags:
         - Animal
+      security:
+        - ApiKeyAuth: []
       parameters:
         - name: x-org
           in: header
@@ -671,6 +834,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Calving information
@@ -689,6 +858,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
@@ -701,11 +876,245 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/calving'
+  /feeding/feed:
+    post:
+      description: Adds feeds to database
+      tags:
+        - Feeding
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/feed'
+      responses:
+        '201':
+          description: Feeds added succesfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/feed'
+    get:
+      description: Returns feeds in the database
+      tags:
+        - Feeding
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Returns all feeds in the database
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/feed'
+  /feeding/feeding:
+    post:
+      description: Adds new feeding events
+      tags:
+        - Feeding
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/feeding'
+      responses:
+        '201':
+          description: A account created succesfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/feedingoutput'
+    get:
+      description: Returns all feedings in the database
+      tags:
+        - Feeding
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Returns all feedings in the database
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/feedingoutput'
+  /management/account:
+    post:
+      description: Creates a new account
+      tags:
+        - Management
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  $ref: '#/components/schemas/user'
+                usertype:
+                  type: string
+                  description: Possible values are 'Admin', 'Editor', 'Viewer'. Default is 'Viewer'.
+      responses:
+        '201':
+          description: A account created succesfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/user'
+                  retries:
+                    type: integer
+                  usertype:
+                    type: string
+                  created:
+                    type: string
+                    format: date-time
+                  modified:
+                    type: string
+                    format: date-time
+                  created_by:
+                    type: integer
+                  modified_by:
+                    type: integer
+    get:
+      description: Creates a new account
+      tags:
+        - Management
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A account created succesfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/accountwithuserdata'
+        '400':
+          description: Bad request
+  /management/account/{id}:
+    get:
+      description: Returns account information specified by the id
+      tags:
+        - Management
+      parameters:
+        - name: id
+          in: path
+          description: ID of the account
+          required: true
+          schema:
+            type: string
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Returns the requested account infromation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/accountwithuserdata'
+    patch:
+      description: Modifies the account information
+      tags:
+        - Management
+      parameters:
+        - name: id
+          in: path
+          description: ID of the account
+          required: true
+          schema:
+            type: string
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/accountwithuserdata'
+      responses:
+        '200':
+          description: Updated account information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/accountwithuserdata'
   /management/barn:
     post:
       description: Adds one or more barns to the database
       tags:
         - Management
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
@@ -722,6 +1131,13 @@ paths:
       description: Returns all barns in the database
       tags:
         - Management
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Returns all barns in the database
@@ -743,6 +1159,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Returns requested barn infromation
@@ -761,6 +1183,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
@@ -778,6 +1206,13 @@ paths:
       description: Adds a piece of equipment to the database
       tags:
         - Management
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
@@ -794,6 +1229,13 @@ paths:
       description: Returns all equipment in the database
       tags:
         - Management
+      parameters:
+        - name: x-org
+          in: header
+          description: organization id
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Returns all equipment in the database

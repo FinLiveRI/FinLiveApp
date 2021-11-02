@@ -54,6 +54,7 @@ class FeedingSerializer(serializers.ModelSerializer):
                     data['organization'] = self.organization
             except Exception:
                 raise serializers.ValidationError({'organization': "Organization mismatch"})
+
         if 'animalid' in data:
             try:
                 animal = get_object_or_404(Animal, animalid=data.get('animalid'), organization_id=data.get('organization'))

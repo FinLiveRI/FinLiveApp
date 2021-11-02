@@ -2,6 +2,7 @@ from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 
 from finliveapp.common.utils import dictTolist
+from finliveapp.decorators.access import check_user_organization, check_user_or_apikey
 from finliveapp.models import Animal, Barn, Feed, FeedAnalysis, Organization, Feeding
 from finliveapp.serializers.feed_serializers import FeedSerializer, FeedingSerializer
 
@@ -37,8 +38,8 @@ class FeedsView(APIView):
             return Response({'error': 'Animal creation failed'}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, *args, **kwargs):
-        # organizationid = self.request.META.get('HTTP_X_ORG', None)
-        feeds = Feed.objects.all()
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        feeds = Feed.objects.filter(organization_id=organizationid)
         serializer = FeedSerializer(feeds, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -61,7 +62,7 @@ class FeedView(APIView):
 
 
 class FeedingView(APIView):
-
+    @check_user_or_apikey()
     def post(self, request, *args, **kwargs):
         data = request.data
         user = request.user
@@ -75,8 +76,9 @@ class FeedingView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
-        # organizationid = self.request.META.get('HTTP_X_ORG', None)
-        feeds = Feeding.objects.all()
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        feeds = Feeding.objects.filter(organization_id=organizationid)
         serializer = FeedingSerializer(feeds, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

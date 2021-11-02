@@ -76,11 +76,8 @@ class Accounts(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @check_user_organization()
     def get(self, request, *args, **kwargs):
-        # data = {}
-        # header = self.request.META.get("HTTP_X_DATA", None)
-        # if header:
-        #    data = json.loads(header)
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         data = UserAccount.objects.all()
         serializer = UserAccountSerializer(data, many=True)
@@ -90,6 +87,7 @@ class Accounts(APIView):
 class Account(APIView):
     permission_classes = [HasOrganizationAPIKey | IsAuthenticated]
 
+    @check_user_organization()
     def get(self, request, *args, **kwargs):
         account = UserAccount.objects.get(user_id=kwargs['id'])
         serializer = UserAccountSerializer(account)
