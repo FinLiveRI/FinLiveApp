@@ -13,8 +13,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from finliveapp.decorators.access import check_organization
+from rest_framework_api_key.permissions import HasAPIKey
+from finliveapp.common.permissions import HasOrganizationAPIKey
+from finliveapp.decorators.access import check_user_organization, check_user_or_apikey
 from finliveapp.models import UserAccount, Organization
 from finliveapp.serializers.management_serializer import UserAccountSerializer
 
@@ -60,7 +61,7 @@ class Login(APIView):
 class Accounts(APIView):
     permission_classes = (IsAuthenticated,)
 
-    @check_organization()
+    @check_user_organization()
     def post(self, request, *args, **kwargs):
         data = request.data
         organization = None
@@ -87,14 +88,14 @@ class Accounts(APIView):
 
 
 class Account(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [HasOrganizationAPIKey | IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         account = UserAccount.objects.get(user_id=kwargs['id'])
         serializer = UserAccountSerializer(account)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @check_organization()
+    @check_user_organization()
     def patch(self, request, *args, **kwargs):
         data = request.data
         organization = None

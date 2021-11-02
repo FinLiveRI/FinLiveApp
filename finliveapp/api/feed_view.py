@@ -68,7 +68,7 @@ class FeedingView(APIView):
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         result = []
         feedinglist = dictTolist(data)
-        serializer = FeedingSerializer(data=data, **{'editor': request.user, 'organization': organizationid}, many=True)
+        serializer = FeedingSerializer(data=feedinglist, **{'editor': request.user, 'organization': organizationid}, many=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

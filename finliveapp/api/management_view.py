@@ -1,6 +1,6 @@
 
 from django.shortcuts import get_object_or_404
-from finliveapp.models import Barn, MilkingSystem, Organization, Breed, Gender, Equipment, Laboratory
+from finliveapp.models import Barn, MilkingSystem, Organization, Equipment, Laboratory
 from finliveapp.serializers.management_serializer import OrganizationSerializer, BarnSerializer, \
     MilkingsystemSerializer, EquipmentSerializer, LaboratorySerializer
 from rest_framework import status

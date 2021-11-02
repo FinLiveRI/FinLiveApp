@@ -4,8 +4,8 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import UniqueConstraint
-
 from finliveapp.constants import UserType
+from rest_framework_api_key.models import AbstractAPIKey
 
 
 class UserAccount(models.Model):
@@ -84,7 +84,6 @@ class Organization(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=128, unique=True, blank=False)
     description = models.CharField(max_length=256, null=True, blank=True)
-    apikey = models.CharField(max_length=64, default=uuid.uuid4)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='organization_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
@@ -95,6 +94,14 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class OrganizationAPIKey(AbstractAPIKey):
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        related_name="api_keys",
+    )
 
 
 class Equipment(models.Model):
@@ -347,7 +354,7 @@ class Milking_Event(models.Model):
     rb_conductivity = models.DecimalField(max_digits=6, decimal_places=3, null=True)
     lf_conductivity = models.DecimalField(max_digits=6, decimal_places=3, null=True)
     lb_conductivity = models.DecimalField(max_digits=6, decimal_places=3, null=True)
-    somatic_cell_count = models.DecimalField(max_digits=12, decimal_places=2)
+    somatic_cell_count = models.DecimalField(max_digits=12, decimal_places=2, null=True)
     colour = models.CharField(max_length=64, null=True)
     temperature = models.DecimalField(max_digits=4, decimal_places=2, null=True)
     total_flow_duration = models.IntegerField(null=True)

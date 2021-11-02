@@ -28,20 +28,24 @@ class Animals(APIView):
                     gender = get_object_or_404(Gender, abbreviation=animal.get('gender'))
 
                     serializer = NewAnimalSerializer(data=animal)
-                    if serializer.is_valid(raise_exception=True):
+                    if serializer.is_valid():
                         serializer.validated_data['organization'] = organization
                         serializer.validated_data['barn'] = barn
                         serializer.validated_data['breed'] = breed
                         serializer.validated_data['gender'] = gender
                         new_animal = Animal.objects.create(**serializer.validated_data)
                         result.append(new_animal)
+                    else:
+                        raise Exception(serializer.errors)
             serializer = AnimalSerializer(result, many=True)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({'error': 'Animal creation failed'}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, *args, **kwargs):
-        animals = Animal.objects.all()
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        organization = get_object_or_404(Organization, id=organizationid)
+        animals = Animal.objects.filter(organization=organization)
         serializer = AnimalViewSerializer(animals, many=True)
         return Response(serializer.data)
 

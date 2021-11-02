@@ -48,6 +48,7 @@ class AnimalViewSerializer(serializers.ModelSerializer):
                   'created', 'modified', 'barn', 'breed', 'gender', 'organization', 'created_by', 'modified_by']
         read_only_fields = ['id', 'created', 'modified', 'barn', 'breed', 'gender', 'organization', 'created_by', 'modified_by']
 
+
 class NewAnimalSerializer(serializers.Serializer):
     euid = serializers.CharField(allow_blank=False, max_length=256)
     name = serializers.CharField(allow_blank=False, max_length=128)
