@@ -421,6 +421,38 @@ components:
         modified_by:
           type: string
           readOnly: true
+    weight:
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        timestamp:
+          type: string
+          format: date-time
+        weight:
+          type: number
+        automaticmeasurement:
+          type: boolean
+        animalid:
+          type: integer
+        equipment_id:
+          type: string
+        organization:
+          type: integer
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: string
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_by:
+          type: string
+          readOnly: true
 servers:
   - url: https://api.server.test/api/v1
 security:

@@ -2,6 +2,7 @@ from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 
 from finliveapp.common.utils import dictTolist
+from finliveapp.decorators.access import check_user_or_apikey
 from finliveapp.models import Animal, Calving, Organization, Milking_Event, Weight
 from finliveapp.serializers.animal_serializers import CalvingSerializer
 from finliveapp.serializers.milking_serializers import MilkingEventSerializer
@@ -106,7 +107,7 @@ class MilkingEventView(APIView):
 
 
 class WeightingsView(APIView):
-
+    @check_user_or_apikey()
     def post(self, request, *args, **kwargs):
         data = request.data
         organizationid = self.request.META.get('HTTP_X_ORG', None)
@@ -125,6 +126,7 @@ class WeightingsView(APIView):
         except Exception:
             return Response({'error': "Saving weight data failed"}, status=status.HTTP_400_BAD_REQUEST)
 
+    @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         organization = get_object_or_404(Organization, id=organizationid)
@@ -134,11 +136,13 @@ class WeightingsView(APIView):
 
 
 class WeightingEventView(APIView):
+    @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
         weighting = get_object_or_404(Weight, id=kwargs['id'])
         serializer = MilkingEventSerializer(weighting)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @check_user_or_apikey()
     def put(self, request, *args, **kwargs):
         weighting = get_object_or_404(Milking_Event, id=kwargs['id'])
         serializer = WeightSerializer(weighting, data=request.data, partial=True)

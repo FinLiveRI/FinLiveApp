@@ -63,6 +63,12 @@ class NewAnimalSerializer(serializers.Serializer):
         data = serializers.Serializer.validate(self, attrs)
         return data
 
+    def to_internal_value(self, data):
+        if 'arrivaldate' not in data:
+            data['arrivaldate'] = data.get('birthdate')
+        result = super().to_internal_value(data)
+        return result
+
 
 class CalvingSerializer(serializers.ModelSerializer):
 

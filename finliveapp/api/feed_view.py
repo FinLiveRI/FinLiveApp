@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 
 class FeedsView(APIView):
-
+    @check_user_or_apikey()
     def post(self, request, *args, **kwargs):
         data = request.data
         user = request.user
@@ -37,6 +37,7 @@ class FeedsView(APIView):
         except IntegrityError:
             return Response({'error': 'Animal creation failed'}, status=status.HTTP_400_BAD_REQUEST)
 
+    @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         feeds = Feed.objects.filter(organization_id=organizationid)
@@ -45,12 +46,13 @@ class FeedsView(APIView):
 
 
 class FeedView(APIView):
-
+    @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
         feed = get_object_or_404(Feed, id=kwargs['id'])
         serializer = FeedSerializer(feed)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @check_user_or_apikey()
     def patch(self, request, *args, **kwargs):
         feed = get_object_or_404(Animal, id=kwargs['id'])
         serializer = FeedSerializer(feed, data=request.data, partial=True)

@@ -59,7 +59,7 @@ class Login(APIView):
 
 
 class Accounts(APIView):
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
 
     @check_user_organization()
     def post(self, request, *args, **kwargs):
@@ -85,7 +85,7 @@ class Accounts(APIView):
 
 
 class Account(APIView):
-    permission_classes = [HasOrganizationAPIKey | IsAuthenticated]
+    #permission_classes = [HasOrganizationAPIKey | IsAuthenticated]
 
     @check_user_organization()
     def get(self, request, *args, **kwargs):

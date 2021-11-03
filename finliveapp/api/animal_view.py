@@ -1,6 +1,7 @@
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 from finliveapp.common.utils import dictTolist
+from finliveapp.decorators.access import check_user_or_apikey
 from finliveapp.models import Animal, Organization, Barn, Breed, Gender, SeedingType
 from finliveapp.serializers.animal_serializers import AnimalSerializer, BreedSerializer, GenderSerializer, \
     NewAnimalSerializer, AnimalViewSerializer, SeedingtypeSerializer
@@ -11,10 +12,10 @@ from rest_framework.response import Response
 
 class Animals(APIView):
 
-    # TODO add decorators
+    @check_user_or_apikey()
     def post(self, request, *args, **kwargs):
         data = request.data
-        user = request.user.useraccount
+        user = request.user
         result = []
         animallist = dictTolist(data)
         if not animallist:
@@ -42,6 +43,7 @@ class Animals(APIView):
         except IntegrityError:
             return Response({'error': 'Animal creation failed'}, status=status.HTTP_400_BAD_REQUEST)
 
+    @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         organization = get_object_or_404(Organization, id=organizationid)
@@ -51,11 +53,13 @@ class Animals(APIView):
 
 
 class AnimalView(APIView):
+    @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
         animal = get_object_or_404(Animal, id=kwargs['id'])
         serializer = AnimalSerializer(animal)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @check_user_or_apikey()
     def patch(self, request, *args, **kwargs):
         animal = get_object_or_404(Animal, id=kwargs['id'])
         serializer = AnimalSerializer(animal, data=request.data, partial=True)
