@@ -139,7 +139,7 @@ class WeightingEventView(APIView):
     @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
         weighting = get_object_or_404(Weight, id=kwargs['id'])
-        serializer = MilkingEventSerializer(weighting)
+        serializer = WeightSerializer(weighting)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @check_user_or_apikey()

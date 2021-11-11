@@ -27,6 +27,7 @@ class Breed(models.Model):
     number = models.IntegerField(unique=True)
     abbreviation = models.CharField(max_length=8)
     name = models.CharField(max_length=128)
+    active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='breed_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
@@ -55,6 +56,7 @@ class Laboratory(models.Model):
     id = models.IntegerField(primary_key=True, unique=True)
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
+    active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='laboratory_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
@@ -71,6 +73,7 @@ class SeedingType(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=256)
+    active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='seedingtype_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
@@ -79,11 +82,14 @@ class SeedingType(models.Model):
     class Meta:
         db_table = 'seedingtype'
 
+    def __str__(self):
+        return self.name
 
 class Organization(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=128, unique=True, blank=False)
     description = models.CharField(max_length=256, null=True, blank=True)
+    active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='organization_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
@@ -104,23 +110,6 @@ class OrganizationAPIKey(AbstractAPIKey):
     )
 
 
-class Equipment(models.Model):
-    id = models.AutoField(primary_key=True)
-    equipmentid = models.IntegerField()
-    type = models.CharField(max_length=128)
-    name = models.CharField(max_length=128)
-    description = models.CharField(max_length=256, blank=True)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, related_name='equipment_created_by', on_delete=models.SET_NULL, null=True)
-    modified = models.DateTimeField(auto_now=True)
-    modified_by = models.ForeignKey(User, related_name='equipment_modified_by', on_delete=models.SET_NULL, null=True)
-
-    class Meta:
-        db_table = 'equipment'
-        constraints = [UniqueConstraint(fields=['equipmentid', 'organization'], name='equipment_organization_unique')]
-
-
 class AccountOrganization(models.Model):
     id = models.AutoField(primary_key=True)
     account = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
@@ -137,6 +126,7 @@ class Barn(models.Model):
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=256, null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='barn_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
@@ -149,11 +139,34 @@ class Barn(models.Model):
         return self.name
 
 
+class Equipment(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
+    equipmentid = models.CharField(max_length=128)
+    type = models.CharField(max_length=128)
+    name = models.CharField(max_length=128)
+    description = models.CharField(max_length=256, blank=True)
+    active = models.BooleanField(default=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    barn = models.ForeignKey(Barn, on_delete=models.CASCADE, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, related_name='equipment_created_by', on_delete=models.SET_NULL, null=True)
+    modified = models.DateTimeField(auto_now=True)
+    modified_by = models.ForeignKey(User, related_name='equipment_modified_by', on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        db_table = 'equipment'
+        constraints = [UniqueConstraint(fields=['equipmentid', 'organization'], name='equipment_organization_unique')]
+
+    def __str__(self):
+        return self.name
+
+
 class MilkingSystem(models.Model):
     id = models.AutoField(primary_key=True)
     equipment = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True)
     barn = models.ForeignKey(Barn, on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='milking_system_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
@@ -197,7 +210,7 @@ class Weight(models.Model):
     timestamp = models.DateTimeField()
     weight = models.DecimalField(max_digits=8, decimal_places=3)
     automaticmeasurement = models.BooleanField()
-    equipment_id = models.CharField(max_length=128, default="")
+    equipment = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='weight_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
@@ -376,7 +389,7 @@ class Milking_Event(models.Model):
 class GasSystem(models.Model):
     id = models.AutoField(primary_key=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
-    equipmentid = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True)
+    equipment = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True)
     euid = models.CharField(max_length=256)
     rfid = models.CharField(max_length=256, default="")
     start_time = models.DateTimeField()

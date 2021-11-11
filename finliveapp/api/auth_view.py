@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_api_key.permissions import HasAPIKey
 from finliveapp.common.permissions import HasOrganizationAPIKey
 from finliveapp.decorators.access import check_user_organization, check_user_or_apikey
-from finliveapp.models import UserAccount, Organization
+from finliveapp.models import UserAccount, Organization, AccountOrganization
 from finliveapp.serializers.management_serializer import UserAccountSerializer
 
 
@@ -108,3 +108,25 @@ class Account(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class Me(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = get_object_or_404(get_user_model(), id=request.user.id)
+        try:
+            useraccount = UserAccount.objects.get(user=user)
+            serializer = UserAccountSerializer(useraccount)
+            result = serializer.data
+            organizations = AccountOrganization.objects.filter(account=useraccount).values('organization__id', 'organization__name', 'default')
+            orgs = []
+            for org in organizations:
+                orgs.append({'organization_id': org.get('organization__id'), 'name': org.get('organization__name'), 'default': org.get('default')})
+
+            result['organizations'] = orgs
+            return Response(result, status=status.HTTP_200_OK)
+        except:
+            return Response({'user': 'User data not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+

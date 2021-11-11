@@ -7,6 +7,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 urlpatterns = ([
     path(r'v1/auth/login', auth_view.Login.as_view(), name='login'),
     path(r'v1/auth/refresh', TokenRefreshView.as_view(), name='token_refresh'),
+    path(r'v1/auth/me', auth_view.Me.as_view(), name='me'),
     re_path(r'v1/animal$', animal_view.Animals.as_view(), name='animals'),
     re_path(r'v1/animal/(?P<id>[0-9]+)$', animal_view.AnimalView.as_view(), name='animal'),
     path(r'v1/bloodsample', animal_samples_view.BloodSamplesView.as_view(), name='bloodsamples'),
@@ -21,8 +22,8 @@ urlpatterns = ([
     re_path(r'v1/seedingtype$', animal_view.SeedingtypesView.as_view(), name='seedingtypes'),
     re_path(r'v1/seedingtype/(?P<id>[0-9]+)$', animal_view.SeedingtypeView.as_view(), name='seedingtype'),
     path(r'v1/weighting', event_view.WeightingsView.as_view(), name='weightings'),
-    path(r'v1/charts/animalcharts', charts_view.AnimalCharts.as_view(), name='animalcharts'),
     path(r'v1/charts/feedingduration', charts_view.FeedingDuration.as_view(), name='feedingduration'),
+    path(r'v1/charts/animalchart', charts_view.AnimalChartsView.as_view(), name='animalchartsview'),
     re_path(r'v1/feeding/feed$', feed_view.FeedsView.as_view(), name='feeds'),
     re_path(r'v1/feeding/feed/(?P<id>[0-9]+)$', feed_view.FeedView.as_view(), name='feed'),
     path(r'v1/feeding/feeding', feed_view.FeedingView.as_view(), name='feedings'),

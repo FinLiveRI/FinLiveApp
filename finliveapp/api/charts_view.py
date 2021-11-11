@@ -16,7 +16,10 @@ from rest_framework.response import Response
 #                       .annotate(sum=Sum('visit_duration'))
 from django.shortcuts import get_object_or_404
 from finliveapp.models import Animal, Feeding, Weight, Milking_Event
-from finliveapp.serializers.charts_serializers import VisitDurationSerializer, AnimalChartsSerializer
+from finliveapp.serializers.animal_serializers import AnimalSerializer, AnimalViewSerializer
+from finliveapp.serializers.charts_serializers import VisitDurationSerializer, AnimalChartsSerializer, \
+    DailyWeightSerializer, DailyMilkSerializer
+from finliveapp.serializers.weight_serializers import WeightSerializer
 
 
 class FeedingDuration(APIView):
@@ -38,7 +41,7 @@ class FeedingDuration(APIView):
         duration_per_day = Feeding.objects.filter(animal_id=animalid, organization_id=organizationid,
                                                   visit_start_time__range=[begin, end])\
             .annotate(visit_day=Trunc('visit_start_time', 'day'))\
-            .values('date')\
+            .values('day')\
             .annotate(duration=Sum('visit_duration'))
 
         serializer = VisitDurationSerializer(duration_per_day, many=True)
@@ -64,6 +67,67 @@ class FeedingDailyAmount(APIView):
 
         animalid = data.get('animalid')
 
+
+class AnimalChartsView(APIView):
+    def get(self, request, *args, **kwargs):
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        data = {}
+        result = {}
+
+        filter = self.request.META.get('HTTP_X_FILTER', None)
+        if filter:
+            data = json.loads(filter)
+        try:
+            begin = datetime.strptime(data.get('begin'), "%Y-%m-%d")
+            end = datetime.strptime(data.get('end'), "%Y-%m-%d") + timedelta(days=1)
+        except Exception:
+            return Response({'date': "Invalid date value"}, status=status.HTTP_400_BAD_REQUEST)
+        if begin > end:
+            return Response({'date': "Invalid date range"}, status=status.HTTP_400_BAD_REQUEST)
+        animalid = data.get('animalid')
+
+        # animal information
+        animal = get_object_or_404(Animal, animalid=animalid, organization_id=organizationid)
+        animalserializer = AnimalViewSerializer(animal)
+        result['animal'] = animalserializer.data
+
+        # feeding duration per day
+        duration_per_day = Feeding.objects.filter(animal=animal, organization_id=organizationid,
+                                                  visit_start_time__range=[begin, end])\
+            .annotate(visit_day=Trunc('visit_start_time', 'day'))\
+            .values('visit_day')\
+            .annotate(duration=Sum('visit_duration'))
+
+        durationserializer = VisitDurationSerializer(duration_per_day, many=True)
+        result['duration'] = durationserializer.data
+
+        # average animal weight per day
+        averageweight = Weight.objects.filter(animal=animal, organization_id=organizationid,
+                                              timestamp__range=[begin, end])\
+            .annotate(day=Trunc('timestamp', 'day'))\
+            .values('day')\
+            .aggregate(daily_weight=Avg('weight'))
+        weightserializer = DailyWeightSerializer(averageweight, many=True)
+        result['weight'] = weightserializer.data
+
+        # feed consumption per day
+        feed_per_day = Feeding.objects.filter(animal=animal, organization_id=organizationid,
+                                                  visit_start_time__range=[begin, end])\
+            .annotate(day=Trunc('visit_start_time', 'day'))\
+            .values('day')\
+            .annotate(daily_weight=Sum('feed_weight'))
+        feedserializer = DailyWeightSerializer(feed_per_day, many=True)
+        result['feed'] = feedserializer.data
+
+        milk_per_day = Milking_Event.objects.filter(animal=animal, organization_id=organizationid,
+                                                    start_time__range=[begin, end])\
+            .annotate(day=Trunc('start_time', 'day'))\
+            .values('day')\
+            .annotate(total_milk=Sum('total_milk_weight'))
+        milkserializer = DailyMilkSerializer(milk_per_day, many=True)
+        result['milk'] = milkserializer.data
+
+        return Response(result, status=status.HTTP_200_OK)
 
 class AnimalCharts(APIView):
 
