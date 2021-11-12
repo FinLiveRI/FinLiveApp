@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path, re_path
 
 from finliveapp.api import auth_view, animal_view, animal_samples_view, feed_view, event_view, management_view,\
@@ -34,5 +36,5 @@ urlpatterns = ([
     re_path(r'v1/management/organizations/(?P<id>[0-9]+)$', management_view.OrganizationView.as_view(), name='organization'),
     path(r'v1/management/account', auth_view.Accounts.as_view(), name='accounts'),
     re_path(r'v1/management/account/(?P<id>[0-9]+)$', auth_view.Account.as_view(), name='account'),
-], 'finliveapp')
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT), 'finliveapp')
 
