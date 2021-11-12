@@ -77,6 +77,14 @@ class FeedingSerializer(serializers.ModelSerializer):
 
         return super().to_internal_value(data)
 
+    def to_representation(self, instance):
+        data = super(FeedingSerializer, self).to_representation(instance)
+        if 'barn' in data:
+            farm = Barn.objects.get(pk=data.pop('barn'))
+            data['farmid'] = farm.farmid
+
+        return data
+
     def create(self, validated_data):
         data = validated_data
         data['created_by'] = self.editor
