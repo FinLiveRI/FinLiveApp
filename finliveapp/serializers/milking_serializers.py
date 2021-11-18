@@ -1,7 +1,7 @@
 
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from finliveapp.models import Organization, Barn, Milking_Event, MilkingSystem
+from finliveapp.models import Organization, Barn, Milking_Event, MilkingSystem, Animal
 from finliveapp.managers.animal import AnimalManager
 
 
@@ -18,20 +18,22 @@ class MilkingEventSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         if 'organization' in data:
-            organization = get_object_or_404(Organization, id=self.organization.id, name=data.get('organization').lower())
+            if isinstance(data.get('organization'), int):
+                organization = get_object_or_404(Organization, id=data.get('organization'))
+            else:
+                organization = get_object_or_404(Organization, id=self.organization.id, name=data.get('organization').lower())
             data['organization'] = organization.id
+        else:
+            data['organization'] = self.organization.id
         if 'farmid' in data:
             barn = get_object_or_404(Barn, farmid=data.get('farmid'), organization=self.organization)
             data['barn'] = barn.id
         if 'milking_system' in data:
             system = get_object_or_404(MilkingSystem, equipment__name=data.get('milking_system'), organization=self.organization)
             data['milking_system'] = system.id
-        if 'animalid' in data:
-            animal = AnimalManager().get_animals(data)
-            if animal:
-                data['animal'] = animal.id
-            else:
-                raise serializers.ValidationError({'animal': "Animal mismatch"})
+        if 'euid' in data:
+            _animal = get_object_or_404(Animal, euid=data.get('euid'), organization=self.organization)
+            data['animal'] = _animal.id
 
         return super(MilkingEventSerializer, self).to_internal_value(data)
 

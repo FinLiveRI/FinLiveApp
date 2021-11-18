@@ -11,10 +11,9 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-# TODO Milking event
 # TODO Insemination event
 # TODO pregnancy check event
-# TODO weight event
+
 from finliveapp.serializers.weight_serializers import WeightSerializer
 
 

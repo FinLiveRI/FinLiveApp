@@ -40,6 +40,14 @@ class DailyMilkSerializer(serializers.Serializer):
     class Meta:
         fields = ('day', 'total_milk')
 
+    def to_representation(self, instance):
+        if isinstance(instance, dict):
+            instance['day'] = instance['day'].date()
+            data = super(DailyMilkSerializer, self).to_representation(instance)
+        else:
+            data = {}
+        return data
+
 
 class AnimalChartsSerializer(serializers.Serializer):
     day = serializers.DateField(required=True)

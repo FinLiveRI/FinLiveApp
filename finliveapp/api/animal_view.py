@@ -23,7 +23,11 @@ class Animals(APIView):
         try:
             with transaction.atomic():
                 for animal in animallist:
-                    organization = get_object_or_404(Organization, name=animal.get('organization').lower())
+                    _organization = animal.get('organization')
+                    if isinstance(_organization, int):
+                        organization = get_object_or_404(Organization, id=animal.get('organization'))
+                    else:
+                        organization = get_object_or_404(Organization, name=animal.get('organization').lower())
                     barn = get_object_or_404(Barn, farmid=animal.get('farmid'))
                     breed = get_object_or_404(Breed, abbreviation=animal.get('breed'))
                     gender = get_object_or_404(Gender, abbreviation=animal.get('gender'))

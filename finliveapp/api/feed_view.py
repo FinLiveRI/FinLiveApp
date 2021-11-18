@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from finliveapp.common.utils import dictTolist
 from finliveapp.decorators.access import check_user_organization, check_user_or_apikey
 from finliveapp.models import Animal, Barn, Feed, FeedAnalysis, Organization, Feeding
-from finliveapp.serializers.feed_serializers import FeedSerializer, FeedingSerializer
+from finliveapp.serializers.feed_serializers import FeedSerializer, FeedingSerializer, NewFeedingSerializer
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -71,7 +71,7 @@ class FeedingView(APIView):
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         result = []
         feedinglist = dictTolist(data)
-        serializer = FeedingSerializer(data=feedinglist, **{'editor': request.user, 'organization': organizationid}, many=True)
+        serializer = NewFeedingSerializer(data=feedinglist, **{'editor': request.user, 'organization': organizationid}, many=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
