@@ -10,10 +10,21 @@ class VisitDurationSerializer(serializers.Serializer):
     class Meta:
         fields = ('visit_day', 'duration')
 
+    def __init__(self, *args, **kwargs):
+        self.calving = kwargs.pop('calving', None)
+        super(VisitDurationSerializer, self).__init__(*args, **kwargs)
+
     def to_representation(self, instance):
-        instance['visit_day'] = instance['visit_day'].date()
-        data = super(VisitDurationSerializer, self).to_representation(instance)
-        data['duration'] = data.get('duration') // 60
+        if isinstance(instance, dict):
+            instance['visit_day'] = instance['visit_day'].date()
+            data = super(VisitDurationSerializer, self).to_representation(instance)
+            data['duration'] = data.get('duration') // 60
+            if self.calving not in EMPTY_VALUES:
+                data['lactation'] = abs(instance['visit_day']-self.calving.get('date')).days
+            else:
+                data['lactation'] = None
+        else:
+            data = {}
         return data
 
 
@@ -24,10 +35,18 @@ class DailyWeightSerializer(serializers.Serializer):
     class Meta:
         fields = ('day', 'daily_weight')
 
+    def __init__(self, *args, **kwargs):
+        self.calving = kwargs.pop('calving', None)
+        super(DailyWeightSerializer, self).__init__(*args, **kwargs)
+
     def to_representation(self, instance):
         if isinstance(instance, dict):
             instance['day'] = instance['day'].date()
             data = super(DailyWeightSerializer, self).to_representation(instance)
+            if self.calving not in EMPTY_VALUES:
+                data['lactation'] = abs(instance['day'] - self.calving.get('date')).days
+            else:
+                data['lactation'] = None
         else:
             data = {}
         return data
@@ -40,10 +59,18 @@ class DailyMilkSerializer(serializers.Serializer):
     class Meta:
         fields = ('day', 'total_milk')
 
+    def __init__(self, *args, **kwargs):
+        self.calving = kwargs.pop('calving', None)
+        super(DailyMilkSerializer, self).__init__(*args, **kwargs)
+
     def to_representation(self, instance):
         if isinstance(instance, dict):
             instance['day'] = instance['day'].date()
             data = super(DailyMilkSerializer, self).to_representation(instance)
+            if self.calving not in EMPTY_VALUES:
+                data['lactation'] = abs(instance['day'] - self.calving.get('date')).days
+            else:
+                data['lactation'] = None
         else:
             data = {}
         return data

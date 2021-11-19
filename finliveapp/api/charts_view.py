@@ -3,7 +3,8 @@ from itertools import chain
 from operator import attrgetter
 from datetime import datetime, timedelta
 
-from django.db.models import Sum, Avg
+from django.core.validators import EMPTY_VALUES
+from django.db.models import Sum, Avg, F, When, Case, Value, ExpressionWrapper, IntegerField
 from django.db.models.functions import Trunc
 from rest_framework import status
 from rest_framework.views import APIView
@@ -15,7 +16,7 @@ from rest_framework.response import Response
 #                       .values('visit_start')
 #                       .annotate(sum=Sum('visit_duration'))
 from django.shortcuts import get_object_or_404
-from finliveapp.models import Animal, Feeding, Weight, Milking_Event
+from finliveapp.models import Animal, Feeding, Weight, Milking_Event, Calving
 from finliveapp.serializers.animal_serializers import AnimalSerializer, AnimalViewSerializer
 from finliveapp.serializers.charts_serializers import VisitDurationSerializer, AnimalChartsSerializer, \
     DailyWeightSerializer, DailyMilkSerializer
@@ -90,7 +91,7 @@ class AnimalChartsView(APIView):
         animal = get_object_or_404(Animal, animalid=animalid, organization_id=organizationid)
         animalserializer = AnimalViewSerializer(animal)
         result['animal'] = animalserializer.data
-
+        last_calving_date = Calving.objects.filter(animal=animal).order_by('-date').values('date').first()
         # feeding duration per day
         duration_per_day = Feeding.objects.filter(animal=animal, organization_id=organizationid,
                                                   visit_start_time__range=[begin, end])\
@@ -98,7 +99,7 @@ class AnimalChartsView(APIView):
             .values('visit_day')\
             .annotate(duration=Sum('visit_duration'))
 
-        durationserializer = VisitDurationSerializer(duration_per_day, many=True)
+        durationserializer = VisitDurationSerializer(duration_per_day, calving=last_calving_date, many=True)
         result['duration'] = durationserializer.data
 
         # average animal weight per day
@@ -107,7 +108,7 @@ class AnimalChartsView(APIView):
             .annotate(day=Trunc('timestamp', 'day'))\
             .values('day')\
             .aggregate(daily_weight=Avg('weight'))
-        weightserializer = DailyWeightSerializer(averageweight, many=True)
+        weightserializer = DailyWeightSerializer(averageweight, calving=last_calving_date, many=True)
         result['weight'] = weightserializer.data
 
         # feed consumption per day
@@ -116,7 +117,7 @@ class AnimalChartsView(APIView):
             .annotate(day=Trunc('visit_start_time', 'day'))\
             .values('day')\
             .annotate(daily_weight=Sum('feed_weight'))
-        feedserializer = DailyWeightSerializer(feed_per_day, many=True)
+        feedserializer = DailyWeightSerializer(feed_per_day, calving=last_calving_date, many=True)
         result['feed'] = feedserializer.data
 
         milk_per_day = Milking_Event.objects.filter(animal=animal, organization_id=organizationid,
@@ -124,7 +125,7 @@ class AnimalChartsView(APIView):
             .annotate(day=Trunc('start_time', 'day'))\
             .values('day')\
             .annotate(total_milk=Sum('total_milk_weight'))
-        milkserializer = DailyMilkSerializer(milk_per_day, many=True)
+        milkserializer = DailyMilkSerializer(milk_per_day, calving=last_calving_date, many=True)
         result['milk'] = milkserializer.data
 
         return Response(result, status=status.HTTP_200_OK)
