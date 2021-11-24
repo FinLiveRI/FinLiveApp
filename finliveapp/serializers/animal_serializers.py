@@ -36,17 +36,22 @@ class AnimalSerializer(serializers.ModelSerializer):
 
 class AnimalViewSerializer(serializers.ModelSerializer):
     breed = serializers.SlugRelatedField(slug_field='name', read_only=True)
-    barn = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    barn = serializers.SlugRelatedField(slug_field='farmid', read_only=True)
     organization = serializers.SlugRelatedField(slug_field='name', read_only=True)
     gender = serializers.SlugRelatedField(slug_field='name', read_only=True)
-    created_by = serializers.SlugRelatedField(slug_field='user.username', read_only=True)
-    modified_by = serializers.SlugRelatedField(slug_field='user.username', read_only=True)
+    #created_by = serializers.SlugRelatedField(slug_field='user.username', read_only=True)
+    #modified_by = serializers.SlugRelatedField(slug_field='user.username', read_only=True)
 
     class Meta:
         model = Animal
         fields = ['id', 'euid', 'name', 'birthdate', 'animalid', 'arrivaldate', 'departuredate', 'departurereason',
-                  'created', 'modified', 'barn', 'breed', 'gender', 'organization', 'created_by', 'modified_by']
-        read_only_fields = ['id', 'created', 'modified', 'barn', 'breed', 'gender', 'organization', 'created_by', 'modified_by']
+                  'created', 'modified', 'barn', 'breed', 'gender', 'organization']
+        read_only_fields = ['id', 'created', 'modified', 'barn', 'breed', 'gender', 'organization']
+
+    def to_representation(self, instance):
+        data = super(AnimalViewSerializer, self).to_representation(instance)
+        data['farmid'] = data.pop('barn')
+        return data
 
 
 class NewAnimalSerializer(serializers.Serializer):

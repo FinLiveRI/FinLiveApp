@@ -1,5 +1,6 @@
 
 from django.shortcuts import get_object_or_404
+from finliveapp.decorators.access import check_user_organization, check_user_or_apikey
 from finliveapp.models import Barn, MilkingSystem, Organization, Equipment, Laboratory
 from finliveapp.serializers.management_serializer import OrganizationSerializer, BarnSerializer, \
     MilkingsystemSerializer, EquipmentSerializer, LaboratorySerializer
@@ -52,11 +53,8 @@ class BarnsView(APIView):
     # TODO add decorators
     def post(self, request, *args, **kwargs):
         data = request.data
-        user = request.user.useraccount
-        if user:
-            data['created_by'] = user.id
-            data['modified_by'] = user.id
-        serializer = BarnSerializer(data=data)
+        user = None if request.user.is_anonymous else request.user
+        serializer = BarnSerializer(data=data, **{'editor': user})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -78,7 +76,8 @@ class BarnView(APIView):
 
     def patch(self, request, *args, **kwargs):
         barn = get_object_or_404(Barn, id=kwargs['id'])
-        serializer = BarnSerializer(barn, data=request.data, partial=True)
+        user = None if request.user.is_anonymous else request.user
+        serializer = BarnSerializer(barn, data=request.data, **{'editor': user}, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -108,11 +107,12 @@ class EquipmentsView(APIView):
     # TODO add decorators
     def post(self, request, *args, **kwargs):
         data = request.data
+        user = None if request.user.is_anonymous else request.user.id
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         organization = get_object_or_404(Organization, id=organizationid)
         data['organization'] = organization.id
-        data['created_by'] = request.user.id
-        data['modified_by'] = request.user.id
+        data['created_by'] = user
+        data['modified_by'] = user
         serializer = EquipmentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()

@@ -15,7 +15,7 @@ class Animals(APIView):
     @check_user_or_apikey()
     def post(self, request, *args, **kwargs):
         data = request.data
-        user = request.user
+        user = None if request.user.is_anonymous else request.user
         result = []
         animallist = dictTolist(data)
         if not animallist:
@@ -38,11 +38,13 @@ class Animals(APIView):
                         serializer.validated_data['barn'] = barn
                         serializer.validated_data['breed'] = breed
                         serializer.validated_data['gender'] = gender
+                        serializer.validated_data['created_by'] = user
+                        serializer.validated_data['modified_by'] = user
                         new_animal = Animal.objects.create(**serializer.validated_data)
                         result.append(new_animal)
                     else:
                         raise Exception(serializer.errors)
-            serializer = AnimalSerializer(result, many=True)
+            serializer = AnimalViewSerializer(result, many=True)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({'error': 'Animal creation failed'}, status=status.HTTP_400_BAD_REQUEST)
@@ -66,8 +68,10 @@ class AnimalView(APIView):
     @check_user_or_apikey()
     def patch(self, request, *args, **kwargs):
         animal = get_object_or_404(Animal, id=kwargs['id'])
+        user = None if request.user.is_anonymous else request.user
         serializer = AnimalSerializer(animal, data=request.data, partial=True)
         if serializer.is_valid():
+            serializer.validated_data['modified_by'] = user
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:

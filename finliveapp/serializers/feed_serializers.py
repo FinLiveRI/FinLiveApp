@@ -5,10 +5,6 @@ from finliveapp.models import Feed, FeedAnalysis, Feeding, Organization, Barn, A
 
 from rest_framework import serializers
 
-from finliveapp.serializers.animal_serializers import AnimalSerializer
-from finliveapp.serializers.management_serializer import BarnSerializer, OrganizationSerializer, UserAccountSerializer, \
-    EquipmentSerializer
-
 
 class FeedSerializer(serializers.ModelSerializer):
 
@@ -132,10 +128,8 @@ class NewFeedingSerializer(serializers.ModelSerializer):
         if 'feedconsumption' in data:
             data['feed_consumption'] = data.pop('feedconsumption')
         if 'equipmentid' in data:
-            data['equipment_id'] = data.pop('equipmentid')
-        if 'equipment_id' in data:
             try:
-                data['equipment_id'] = Equipment.objects.get(equipmentid=data.get('equipment_id')).id
+                data['equipment'] = Equipment.objects.get(equipmentid=data.get('equipmentid')).id
             except Exception:
                 raise serializers.ValidationError({'equipment': "Equipment mismatch"})
         if 'organization' in data:

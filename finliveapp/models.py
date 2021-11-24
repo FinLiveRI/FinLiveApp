@@ -44,6 +44,7 @@ class Gender(models.Model):
     id = models.AutoField(primary_key=True)
     abbreviation = models.CharField(max_length=8)
     name = models.CharField(max_length=64)
+    active = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'gender'

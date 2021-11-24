@@ -27,8 +27,8 @@ class FeedsView(APIView):
                         feed['organization'] = organization
                     else:
                         feed['organization'] = get_object_or_404(Organization, id=feed.get('organization')).id
-                    feed['modified_by'] = user.id
-                    feed['created_by'] = user.id
+                    feed['modified_by'] = None if user.is_anonymous else user.id
+                    feed['created_by'] = None if user.is_anonymous else user.id
                     feedserializer = FeedSerializer(data=feed)
                     if feedserializer.is_valid(raise_exception=True):
                         feedserializer.save()
@@ -54,7 +54,10 @@ class FeedView(APIView):
 
     @check_user_or_apikey()
     def patch(self, request, *args, **kwargs):
-        feed = get_object_or_404(Animal, id=kwargs['id'])
+        feed = get_object_or_404(Feed, id=kwargs['id'])
+        user = request.user
+        data = request.data
+        data['modified_by'] = None if user.is_anonymous else user.id
         serializer = FeedSerializer(feed, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -68,10 +71,11 @@ class FeedingView(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
         user = request.user
+        if user.is_anonymous:
+            user = None
         organizationid = self.request.META.get('HTTP_X_ORG', None)
-        result = []
         feedinglist = dictTolist(data)
-        serializer = NewFeedingSerializer(data=feedinglist, **{'editor': request.user, 'organization': organizationid}, many=True)
+        serializer = NewFeedingSerializer(data=feedinglist, **{'editor': user, 'organization': organizationid}, many=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -84,3 +88,24 @@ class FeedingView(APIView):
         feeds = Feeding.objects.filter(organization_id=organizationid)
         serializer = FeedingSerializer(feeds, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class FeedingSingleView(APIView):
+    @check_user_or_apikey()
+    def get(self, request, *args, **kwargs):
+        feeding = get_object_or_404(Feeding, id=kwargs['id'])
+        serializer = FeedSerializer(feeding)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @check_user_or_apikey()
+    def patch(self, request, *args, **kwargs):
+        feeding = get_object_or_404(Feeding, id=kwargs['id'])
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        user = request.user
+        data = request.data
+        serializer = FeedingSerializer(feeding, data=request.data, **{'editor': user, 'organization': organizationid}, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

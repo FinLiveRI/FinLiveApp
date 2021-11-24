@@ -102,7 +102,8 @@ class Account(APIView):
             organization = get_object_or_404(Organization, id=organizationid)
         account = UserAccount.objects.get(user_id=kwargs['id'])
         serializer = UserAccountSerializer(account, data=data, partial=True,
-                                           editor=request.user, organization=organization)
+                                           **{'editor': request.user,
+                                              'organization': organization})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

@@ -62,16 +62,17 @@ class CalvingView(APIView):
 
 
 class MilkingEventsView(APIView):
-
+    @check_user_or_apikey()
     def post(self, request, *args, **kwargs):
         data = request.data
+        user = None if request.user.is_anonymous else request.user
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         organization = get_object_or_404(Organization, id=organizationid)
         milkinglist = dictTolist(data)
         if not milkinglist:
             return Response({'error': "Milking data missing"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            serializer = MilkingEventSerializer(data=milkinglist, **{'editor': request.user,
+            serializer = MilkingEventSerializer(data=milkinglist, **{'editor': user,
                                                          'organization': organization}, many=True)
             if serializer.is_valid():
                 serializer.save()
@@ -81,6 +82,7 @@ class MilkingEventsView(APIView):
         except Exception:
             return Response({'error': "Saving milking data failed"}, status=status.HTTP_400_BAD_REQUEST)
 
+    @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         organization = get_object_or_404(Organization, id=organizationid)
@@ -90,14 +92,20 @@ class MilkingEventsView(APIView):
 
 
 class MilkingEventView(APIView):
+    @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
         milking = get_object_or_404(Milking_Event, id=kwargs['id'])
         serializer = MilkingEventSerializer(milking)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @check_user_or_apikey()
     def put(self, request, *args, **kwargs):
         milking = get_object_or_404(Milking_Event, id=kwargs['id'])
-        serializer = MilkingEventSerializer(milking, data=request.data, partial=True)
+        user = None if request.user.is_anonymous else request.user
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        organization = get_object_or_404(Organization, id=organizationid)
+        serializer = MilkingEventSerializer(milking, data=request.data,  **{'editor': user,
+                                                         'organization': organization}, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -109,13 +117,14 @@ class WeightingsView(APIView):
     @check_user_or_apikey()
     def post(self, request, *args, **kwargs):
         data = request.data
+        user = None if request.user.is_anonymous else request.user
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         organization = get_object_or_404(Organization, id=organizationid)
         weightlist = dictTolist(data)
         if not weightlist:
             return Response({'error': "Weight data missing"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            serializer = WeightSerializer(data=weightlist, **{'editor': request.user,
+            serializer = WeightSerializer(data=weightlist, **{'editor': user,
                                                          'organization': organization}, many=True)
             if serializer.is_valid():
                 serializer.save()
@@ -144,7 +153,11 @@ class WeightingEventView(APIView):
     @check_user_or_apikey()
     def put(self, request, *args, **kwargs):
         weighting = get_object_or_404(Milking_Event, id=kwargs['id'])
-        serializer = WeightSerializer(weighting, data=request.data, partial=True)
+        user = None if request.user.is_anonymous else request.user
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        organization = get_object_or_404(Organization, id=organizationid)
+        serializer = WeightSerializer(weighting, data=request.data, **{'editor': user,
+                                                         'organization': organization}, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

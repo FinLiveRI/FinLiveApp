@@ -150,7 +150,7 @@ class EquipmentSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         data = validated_data
-        data['modified_by'] = self.editor
+        #data['modified_by'] = self.editor
         return super(EquipmentSerializer, self).update(instance, data)
 
 
