@@ -76,13 +76,39 @@ class DailyMilkSerializer(serializers.Serializer):
         return data
 
 
+class DailyFeedingSerializer(serializers.Serializer):
+    day = serializers.DateField(required=True)
+    daily_weight = serializers.DecimalField(max_digits=8, decimal_places=3)
+    visit_count = serializers.IntegerField()
+    duration = serializers.IntegerField()
+
+    class Meta:
+        fields = ('day', 'daily_weight', 'visit_count', 'duration')
+
+    def __init__(self, *args, **kwargs):
+        self.calving = kwargs.pop('calving', None)
+        super(DailyFeedingSerializer, self).__init__(*args, **kwargs)
+
+    def to_representation(self, instance):
+        if isinstance(instance, dict):
+            instance['day'] = instance['day'].date()
+            data = super(DailyFeedingSerializer, self).to_representation(instance)
+            if self.calving not in EMPTY_VALUES:
+                data['lactation'] = abs(instance['day'] - self.calving.get('date')).days
+            else:
+                data['lactation'] = None
+        else:
+            data = {}
+        return data
+
+
 class AnimalChartsSerializer(serializers.Serializer):
     day = serializers.DateField(required=True)
-    weight_average = serializers.DecimalField(max_digits=8, decimal_places=3)
+    #weight_average = serializers.DecimalField(max_digits=8, decimal_places=3)
     daily_duration = serializers.IntegerField()
-    #animalid = serializers.IntegerField()
-    #euid = serializers.CharField()
-    #farmid = serializers.IntegerField()
+    animalid = serializers.IntegerField()
+    euid = serializers.CharField()
+    farmid = serializers.IntegerField()
 
     class Meta:
         fields = ('animalid', 'euid', 'farmid', 'day', 'weight_average', 'daily_duration')

@@ -518,9 +518,6 @@ components:
           type: integer
         lb_flow_duration:
           type: integer
-        milkingsystem:
-          type: string
-          writeOnly: true
         milking_system:
           type: string
           readOnly: true
@@ -1061,6 +1058,9 @@ paths:
       description: Returns milking information specified by the id
       tags:
         - Milking
+      security:
+        - BearerAuth: [ ]
+        - ApiKeyAuth: [ ]
       parameters:
         - name: id
           in: path
@@ -1085,6 +1085,9 @@ paths:
       description: Modifies milking information
       tags:
         - Milking
+      security:
+        - BearerAuth: [ ]
+        - ApiKeyAuth: [ ]
       parameters:
         - name: id
           in: path
