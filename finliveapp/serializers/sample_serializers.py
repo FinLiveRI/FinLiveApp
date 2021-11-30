@@ -3,7 +3,7 @@ from django.core.validators import EMPTY_VALUES
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from finliveapp.models import Animal, BloodSample, Organization
+from finliveapp.models import Animal, BloodSample, Organization, GasSystem, Equipment
 
 
 class BloodSampleSerializer(serializers.ModelSerializer):
@@ -59,3 +59,20 @@ class BloodSampleSerializer(serializers.ModelSerializer):
         data = validated_data
         data['modified_by'] = self.editor
         return super(BloodSampleSerializer, self).update(instance, data)
+
+
+class GasSystemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = GasSystem
+        fields = '__all__'
+
+    def to_internal_value(self, data):
+        _data = data
+        animal = get_object_or_404(Animal, euid=data.get('euid'), organization=data.get('organization'))
+        _data['animal'] = animal.id
+        equipment = get_object_or_404(Equipment, equipmentid=data.get('equipmentid'))
+        _data['equipment'] = equipment.id
+
+        return super().to_internal_value(_data)
+

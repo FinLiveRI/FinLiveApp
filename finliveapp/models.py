@@ -391,6 +391,7 @@ class GasSystem(models.Model):
     id = models.AutoField(primary_key=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     equipment = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True)
+    animal = models.ForeignKey(Animal, on_delete=models.SET_NULL, null=True)
     euid = models.CharField(max_length=256)
     rfid = models.CharField(max_length=256, default="")
     start_time = models.DateTimeField()
