@@ -50,7 +50,7 @@ class OrganizationView(APIView):
 
 
 class BarnsView(APIView):
-    # TODO add decorators
+    @check_user_organization()
     def post(self, request, *args, **kwargs):
         data = request.data
         user = None if request.user.is_anonymous else request.user
@@ -61,8 +61,8 @@ class BarnsView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @check_user_organization()
     def get(self, request, *args, **kwargs):
-        # TODO check permissions
         barns = Barn.objects.all()
         serializer = BarnSerializer(barns, many=True)
         return Response(serializer.data)
