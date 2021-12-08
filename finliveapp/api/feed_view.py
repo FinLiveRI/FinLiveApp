@@ -9,7 +9,8 @@ from finliveapp.serializers.feed_serializers import FeedSerializer, FeedingSeria
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+import json
+from datetime import datetime, timedelta
 
 class FeedsView(APIView):
     @check_user_or_apikey()
@@ -85,10 +86,30 @@ class FeedingView(APIView):
     @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
         organizationid = self.request.META.get('HTTP_X_ORG', None)
-        feeds = Feeding.objects.filter(organization_id=organizationid)
-        serializer = FeedingSerializer(feeds, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
+        farmid = self.request.META.get('HTTP_X_FARM', None)
+        filter = self.request.META.get('HTTP_X_FILTER', None)
+        feeds = Feeding.objects.filter(organization_id=organizationid).order_by('-visit_start_time')
+        if filter is None:
+            if farmid is not None:
+                farm = Barn.objects.get(farmid=farmid)
+                feeds = feeds.filter(barn_id=farm.id)
+            serializer = NewFeedingSerializer(feeds[:1000], many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            data = json.loads(filter)
+            if 'animalid' in data:
+                animal = Animal.objects.get(animalid=data.get('animalid'))
+                feeds = feeds.filter(animal_id=animal.id)
+            if 'begin' in data:
+                begin = datetime.strptime(data.get('begin'), "%Y-%m-%d")
+                feeds = feeds.filter(visit_start_time__gte=begin)
+            if 'end' in data:
+                end = datetime.strptime(data.get('end'), "%Y-%m-%d") + timedelta(days=1)
+                feeds = feeds.filter(visit_start_time__lt=end)
+            if 'latest' in data:
+                feeds = feeds[:1]
+            serializer = NewFeedingSerializer(feeds, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
 class FeedingSingleView(APIView):
     @check_user_or_apikey()

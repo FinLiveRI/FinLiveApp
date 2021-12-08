@@ -167,10 +167,17 @@ class NewFeedingSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super(NewFeedingSerializer, self).to_representation(instance)
+        excluded = ['id', 'created', 'created_by', 'modified', 'modified_by']
+        for field in excluded:
+            del data[field]
         if 'barn' in data:
             farm = Barn.objects.get(pk=data.pop('barn'))
             data['farmid'] = farm.farmid
-
+        animal = Animal.objects.get(pk=data.pop('animal'))
+        data['animalid'] = animal.animalid
+        data.move_to_end('animalid', last=False)
+        data['euid'] = animal.euid
+        data.move_to_end('euid', last=False)
         return data
 
     def create(self, validated_data):
