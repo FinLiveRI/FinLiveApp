@@ -11,7 +11,6 @@ from rest_framework.response import Response
 
 
 class Animals(APIView):
-
     @check_user_or_apikey()
     def post(self, request, *args, **kwargs):
         data = request.data
@@ -52,11 +51,12 @@ class Animals(APIView):
     @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
         organizationid = self.request.META.get('HTTP_X_ORG', None)
-        organization = get_object_or_404(Organization, id=organizationid)
-        animals = Animal.objects.filter(organization=organization)
+        farmid = self.request.META.get('HTTP_X_FARM', None)
+        animals = Animal.objects.filter(organization__id=organizationid).select_related()
+        if (farmid is not None) and (farmid != "null"):
+            animals = animals.filter(barn__farmid=int(farmid))
         serializer = AnimalViewSerializer(animals, many=True)
         return Response(serializer.data)
-
 
 class AnimalView(APIView):
     @check_user_or_apikey()

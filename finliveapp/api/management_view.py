@@ -63,7 +63,8 @@ class BarnsView(APIView):
 
     @check_user_organization()
     def get(self, request, *args, **kwargs):
-        barns = Barn.objects.all()
+        organizationid = self.request.META.get('HTTP_X_ORG', None)
+        barns = Barn.objects.filter(organization_id=organizationid)
         serializer = BarnSerializer(barns, many=True)
         return Response(serializer.data)
 

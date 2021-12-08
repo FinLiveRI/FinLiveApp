@@ -37,6 +37,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "x-org",
     "x-filter",
+    "x-farm"
 ]
 # Application definition
 

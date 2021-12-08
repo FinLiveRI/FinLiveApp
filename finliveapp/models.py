@@ -100,7 +100,7 @@ class Organization(models.Model):
         db_table = 'organization'
 
     def __str__(self):
-        return self.name
+        return "{0} ({1})".format(self.description, self.name)
 
 
 class OrganizationAPIKey(AbstractAPIKey):
@@ -119,6 +119,9 @@ class AccountOrganization(models.Model):
 
     class Meta:
         db_table = 'account_organization'
+
+    def __str__(self):
+        return "{0} at {1}".format(self.account.user.username, self.organization.description)
 
         
 class Barn(models.Model):
@@ -175,6 +178,9 @@ class MilkingSystem(models.Model):
 
     class Meta:
         db_table = 'milking_system'
+
+    def __str__(self):
+        return self.equipment.name
 
 
 class Animal(models.Model):
