@@ -69,6 +69,7 @@ class FeedingDailyAmount(APIView):
 class AnimalChartsView(APIView):
     def get(self, request, *args, **kwargs):
         organizationid = self.request.META.get('HTTP_X_ORG', None)
+
         data = {}
         result = {}
 
@@ -82,10 +83,11 @@ class AnimalChartsView(APIView):
             return Response({'date': "Invalid date value"}, status=status.HTTP_400_BAD_REQUEST)
         if begin > end:
             return Response({'date': "Invalid date range"}, status=status.HTTP_400_BAD_REQUEST)
-        animalid = data.get('animalid')
+        #animalid = data.get('animalid')
+        euid = data.get('euid')
+        farmid = data.get('farmid')
 
-        # animal information
-        animal = get_object_or_404(Animal, animalid=animalid, organization_id=organizationid)
+        animal = get_object_or_404(Animal, euid=euid, organization_id=organizationid, barn__farmid=farmid)
         animalserializer = AnimalViewSerializer(animal)
         result['animal'] = animalserializer.data
         last_calving_date = Calving.objects.filter(animal=animal).order_by('-date').values('date').first()
