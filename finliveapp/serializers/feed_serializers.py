@@ -7,15 +7,39 @@ from rest_framework import serializers
 
 
 class FeedSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Feed
         fields = '__all__'
         read_only_fields = ('id', 'created', 'modified')
 
 
-class FeedingSerializer(serializers.ModelSerializer):
+# Fast serializer for bulk creation of objects (5x speedup)
+# all events needs to be from same farm and organization
+class BulkFeedingSerializer(object):
+    def __init__(self, data, organizationid, farmid):
+        self.organizationid = organizationid
+        self.data = data
+        self.farmid = farmid
+        self.fields = ('equipment', 'animal', 'visit_start_time', 'visit_end_time',
+                  'visit_duration', 'feed_weight', 'feed_consumption', 'feed_name', 'organization', 'barn')
 
+    def bulk_create(self):
+        animals = Animal.objects.filter(barn__farmid=self.farmid).all()
+        equipment = Equipment.objects.filter(barn__farmid=self.farmid).all()
+        barn = Barn.objects.get(farmid=self.farmid)
+        org = Organization.objects.get(id=self.organizationid)
+        events = []
+        for visit in self.data:
+            visit["animal"] = animals.get(euid=visit["euid"])
+            visit["equipment"] = equipment.get(equipmentid=visit["equipmentid"])
+            visit["barn"] = barn
+            visit["organization"] = org
+            events.append(Feeding(**{f: visit[f] for f in self.fields}))
+        fd = Feeding.objects.bulk_create(events, batch_size=1000)
+        return True
+
+
+class FeedingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feeding
         fields = '__all__'
@@ -103,7 +127,6 @@ class FeedingSerializer(serializers.ModelSerializer):
 
 
 class NewFeedingSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Feeding
         fields = ['id', 'visit_start_time', 'visit_end_time', 'visit_duration', 'feed_weight', 'feed_consumption',

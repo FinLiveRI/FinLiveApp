@@ -348,6 +348,7 @@ class Feeding(models.Model):
     feed_weight = models.DecimalField(max_digits=6, decimal_places=3)
     feed_consumption = models.DecimalField(max_digits=6, decimal_places=3)
     feed = models.ForeignKey(Feed, on_delete=models.SET_NULL, null=True)
+    feed_name = models.CharField(max_length=128, null=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     barn = models.ForeignKey(Barn, on_delete=models.SET_NULL, null=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -357,7 +358,8 @@ class Feeding(models.Model):
 
     class Meta:
         db_table = 'feeding'
-
+        constraints = [
+                models.UniqueConstraint(fields=['animal', 'visit_start_time'], name="unique visit")]
 
 class Milking_Event(models.Model):
     id = models.AutoField(primary_key=True)

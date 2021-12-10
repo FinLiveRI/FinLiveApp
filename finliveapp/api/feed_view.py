@@ -4,7 +4,8 @@ from django.shortcuts import get_object_or_404
 from finliveapp.common.utils import dictTolist
 from finliveapp.decorators.access import check_user_organization, check_user_or_apikey
 from finliveapp.models import Animal, Barn, Feed, FeedAnalysis, Organization, Feeding
-from finliveapp.serializers.feed_serializers import FeedSerializer, FeedingSerializer, NewFeedingSerializer
+from finliveapp.serializers.feed_serializers import FeedSerializer, FeedingSerializer, NewFeedingSerializer,\
+     BulkFeedingSerializer
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -75,13 +76,21 @@ class FeedingView(APIView):
         if user.is_anonymous:
             user = None
         organizationid = self.request.META.get('HTTP_X_ORG', None)
+        farmid = self.request.META.get('HTTP_X_FARM', None)
         feedinglist = dictTolist(data)
-        serializer = NewFeedingSerializer(data=feedinglist, **{'editor': user, 'organization': organizationid}, many=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = BulkFeedingSerializer(data, organizationid, farmid)
+        try:
+            serializer.bulk_create()
+            return Response({}, status=status.HTTP_201_CREATED)
+        except:
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+        #serializer = NewFeedingSerializer(data=feedinglist, **{'editor': user, 'organization': organizationid}, many=True)
+        #if serializer.is_valid():
+        #    serializer.save()
+        #    return Response(serializer.data, status=status.HTTP_201_CREATED)
+        #else:
+        #    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @check_user_or_apikey()
     def get(self, request, *args, **kwargs):
