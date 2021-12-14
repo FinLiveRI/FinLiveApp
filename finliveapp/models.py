@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import UniqueConstraint
 from finliveapp.constants import UserType
 from rest_framework_api_key.models import AbstractAPIKey
-
+from finliveapp import managers
 
 class UserAccount(models.Model):
     id = models.AutoField(primary_key=True)
@@ -123,7 +123,7 @@ class AccountOrganization(models.Model):
     def __str__(self):
         return "{0} at {1}".format(self.account.user.username, self.organization.description)
 
-        
+
 class Barn(models.Model):
     id = models.AutoField(primary_key=True)
     farmid = models.IntegerField(unique=True)
@@ -395,28 +395,36 @@ class Milking_Event(models.Model):
         db_table = 'milking_event'
 
 
-class GasSystem(models.Model):
+class GasMeasurement(models.Model):
     id = models.AutoField(primary_key=True)
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     equipment = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True)
     animal = models.ForeignKey(Animal, on_delete=models.SET_NULL, null=True)
-    euid = models.CharField(max_length=256)
+    barn = models.ForeignKey(Barn, on_delete=models.CASCADE)
     rfid = models.CharField(max_length=256, default="")
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     measurement_duration = models.IntegerField()
-    co2 = models.IntegerField()
-    ch4 = models.IntegerField()
-    o2 = models.IntegerField()
-    h2 = models.IntegerField()
+    co2 = models.FloatField()
+    ch4 = models.FloatField()
+    o2 = models.FloatField()
+    h2 = models.FloatField()
+    airflow = models.FloatField()
+    airflow_cf = models.FloatField()
+    wind_speed = models.FloatField()
+    wind_direction = models.FloatField()
+    wind_cf = models.FloatField()
     created = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, related_name='gas_system_created_by', on_delete=models.SET_NULL, null=True)
+    created_by = models.ForeignKey(User, related_name='gas_measurement_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
-    modified_by = models.ForeignKey(User, related_name='gas_system_modified_by', on_delete=models.SET_NULL, null=True)
+    modified_by = models.ForeignKey(User, related_name='gas_measurement_modified_by', on_delete=models.SET_NULL, null=True)
+
+    objects = managers.GasMeasurementManager()
 
     class Meta:
-        db_table = 'gas_system'
-
+        db_table = 'gas_measurement'
+        constraints = [
+            models.UniqueConstraint(fields=['equipment', 'start_time'], name="unique gas measurement")]
 
 class MilkAnalysis(models.Model):
     id = models.AutoField(primary_key=True)

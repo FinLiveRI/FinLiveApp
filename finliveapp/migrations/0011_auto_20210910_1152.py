@@ -107,7 +107,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='GasSystem',
+            name='GasMeasurement',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False)),
                 ('euid', models.CharField(max_length=256)),

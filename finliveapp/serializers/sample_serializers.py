@@ -3,7 +3,7 @@ from django.core.validators import EMPTY_VALUES
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from finliveapp.models import Animal, BloodSample, Organization, GasSystem, Equipment
+from finliveapp.models import Animal, BloodSample, Organization, GasMeasurement, Equipment
 
 
 class BloodSampleSerializer(serializers.ModelSerializer):
@@ -64,7 +64,7 @@ class BloodSampleSerializer(serializers.ModelSerializer):
 class GasSystemSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = GasSystem
+        model = GasMeasurement
         fields = '__all__'
 
     def to_internal_value(self, data):

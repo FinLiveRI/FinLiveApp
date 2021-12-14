@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='gassystem',
+            model_name='gasmeasurement',
             name='animal',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='finliveapp.animal'),
         ),

@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RenameField(
-            model_name='gassystem',
+            model_name='gasmeasurement',
             old_name='equipmentid',
             new_name='equipment',
         ),
