@@ -12,4 +12,5 @@ pytz==2021.1; python_version >= "3.6" and python_full_version < "3.0.0" or pytho
 setuptools==57.0.0
 sqlparse==0.4.1; python_version >= "3.6"
 django-cors-headers==3.10.0
+pandas==1.3.4
 
