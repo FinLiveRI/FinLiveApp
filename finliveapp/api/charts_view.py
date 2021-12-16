@@ -38,7 +38,7 @@ class FeedingDuration(APIView):
         animalid = data.get('animalid')
         duration_per_day = Feeding.objects.filter(animal_id=animalid, organization_id=organizationid,
                                                   visit_start_time__range=[begin, end])\
-            .annotate(visit_day=Trunc('visit_start_time', 'day'))\
+            .annotate(visit_day=Trunc('start_time', 'day'))\
             .values('day')\
             .annotate(duration=Sum('visit_duration'))
 
@@ -94,7 +94,7 @@ class AnimalChartsView(APIView):
         # feeding duration per day
         duration_per_day = Feeding.objects.filter(animal=animal, organization_id=organizationid,
                                                   visit_start_time__range=[begin, end])\
-            .annotate(visit_day=Trunc('visit_start_time', 'day'))\
+            .annotate(visit_day=Trunc('start_time', 'day'))\
             .values('visit_day')\
             .annotate(duration=Sum('visit_duration'))
 
@@ -113,7 +113,7 @@ class AnimalChartsView(APIView):
         # feed consumption per day
         feed_per_day = Feeding.objects.filter(animal=animal, organization_id=organizationid,
                                                   visit_start_time__range=[begin, end])\
-            .annotate(day=Trunc('visit_start_time', 'day'))\
+            .annotate(day=Trunc('start_time', 'day'))\
             .values('day')\
             .annotate(daily_weight=Sum('feed_weight'))
         feedserializer = DailyWeightSerializer(feed_per_day, calving=last_calving_date, many=True)
@@ -224,7 +224,7 @@ class AnimalChart(APIView):
         # feed consumption per day
         feed_per_day = Feeding.objects.filter(animal=animal, organization_id=organizationid,
                                                   visit_start_time__range=[begin, end])\
-            .annotate(day=Trunc('visit_start_time', 'day'))\
+            .annotate(day=Trunc('start_time', 'day'))\
             .values('day')\
             .annotate(daily_weight=Sum('feed_weight'), visit_count=Count('feed_weight'), duration=Sum('visit_duration'))
         feedserializer = DailyFeedingSerializer(feed_per_day, calving=last_calving_date, many=True)

@@ -342,8 +342,8 @@ class Feeding(models.Model):
     id = models.AutoField(primary_key=True)
     equipment = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True)
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
-    visit_start_time = models.DateTimeField()
-    visit_end_time = models.DateTimeField(null=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True)
     visit_duration = models.IntegerField(blank=True, null=True)
     feed_weight = models.DecimalField(max_digits=6, decimal_places=3)
     feed_consumption = models.DecimalField(max_digits=6, decimal_places=3)
@@ -359,7 +359,7 @@ class Feeding(models.Model):
     class Meta:
         db_table = 'feeding'
         constraints = [
-                models.UniqueConstraint(fields=['animal', 'visit_start_time'], name="unique visit")]
+                models.UniqueConstraint(fields=['animal', 'start_time'], name="unique visit")]
 
 class Milking_Event(models.Model):
     id = models.AutoField(primary_key=True)
