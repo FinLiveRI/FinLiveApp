@@ -202,9 +202,17 @@ class Animal(models.Model):
     modified = models.DateTimeField(auto_now=True)
     modified_by = models.ForeignKey(User, related_name='animal_modified_by', on_delete=models.SET_NULL, null=True)
 
+    objects = models.Manager()
+    api = managers.ApiManager()
+
     class Meta:
         db_table = 'animal'
         constraints = [UniqueConstraint(fields=['euid', 'organization'], name='euid_organization_unique')]
+
+    class Api:
+        fields = ('euid', 'animalid', 'barn__farmid', 'name', 'breed__abbreviation',
+                  'gender__abbreviation', 'organization__name', 'birthdate', 'arrivaldate',
+                  'departuredate', 'departurereason')
 
     def __str__(self):
         return self.name

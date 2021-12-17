@@ -1,4 +1,5 @@
 from django.db import IntegrityError, transaction
+from django.db.models import F
 from django.shortcuts import get_object_or_404
 from finliveapp.common.utils import dictTolist
 from finliveapp.decorators.access import check_user_or_apikey
@@ -52,11 +53,10 @@ class Animals(APIView):
     def get(self, request, *args, **kwargs):
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         farmid = self.request.META.get('HTTP_X_FARM', None)
-        animals = Animal.objects.filter(organization__id=organizationid).select_related()
+        animals = Animal.api.filter(organization__id=organizationid).select_related()
         if (farmid is not None) and (farmid != "null"):
             animals = animals.filter(barn__farmid=int(farmid))
-        serializer = AnimalViewSerializer(animals, many=True)
-        return Response(serializer.data)
+        return Response(animals.api_values())
 
 class AnimalView(APIView):
     @check_user_or_apikey()

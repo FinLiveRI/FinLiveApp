@@ -7,9 +7,6 @@ import django.db
 import json
 import datetime
 
-def _total_seconds(t):
-    return int(datetime.timedelta(hours=t.hour, minutes=t.minute, seconds=t.second).total_seconds())
-
 class GasMeasurementManager(django.db.models.Manager):
 
     def create_measurements(self, data, organizationid, farmid):
@@ -29,11 +26,14 @@ class GasMeasurementManager(django.db.models.Manager):
             events.append(models.GasMeasurement(**{f: visit[f] for f in fields}))
         return events
 
+    def _total_seconds(self, t):
+        return int(datetime.timedelta(hours=t.hour, minutes=t.minute, seconds=t.second).total_seconds())
+
     """Read greenfeed visit data from Excel"""
     def read_greenfeed(self, file):
         df = pd.read_excel(file, sheet_name="Visit_Data", skiprows=1)
         df = df.rename(mapper=lambda x: x.lower().replace(" ", "_").replace("_(g/d)", "").replace("_(l/s)", ""), axis=1)
-        df["measurement_duration"] = [_total_seconds(gd) for gd in df.total_time_with_good_data]
+        df["measurement_duration"] = [self._total_seconds(gd) for gd in df.total_time_with_good_data]
         df = df.rename({'unit_id': 'equipmentid', 'rfid_number': 'rfid',
                         'wind_sp': 'wind_speed', 'wind_dir': 'wind_direction'},
                        axis=1)
