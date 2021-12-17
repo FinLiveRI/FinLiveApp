@@ -30,7 +30,8 @@ class Animals(APIView):
                         organization = get_object_or_404(Organization, name=animal.get('organization').lower())
                     barn = get_object_or_404(Barn, farmid=animal.get('farmid'))
                     breed = get_object_or_404(Breed, abbreviation=animal.get('breed'))
-                    gender = get_object_or_404(Gender, abbreviation=animal.get('gender'))
+                    #gender = get_object_or_404(Gender, abbreviation=animal.get('gender'))
+                    gender = animal.get("gender")
 
                     serializer = NewAnimalSerializer(data=animal)
                     if serializer.is_valid():
@@ -40,12 +41,13 @@ class Animals(APIView):
                         serializer.validated_data['gender'] = gender
                         serializer.validated_data['created_by'] = user
                         serializer.validated_data['modified_by'] = user
-                        new_animal = Animal.objects.create(**serializer.validated_data)
+                        new_animal, created = Animal.objects.update_or_create(euid=animal.get('euid'),
+                                                                              barn__farmid=animal.get('farmid'),
+                                                                              defaults=serializer.validated_data)
                         result.append(new_animal)
                     else:
                         raise Exception(serializer.errors)
-            serializer = AnimalViewSerializer(result, many=True)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({'status': 'OK'}, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({'error': 'Animal creation failed'}, status=status.HTTP_400_BAD_REQUEST)
 

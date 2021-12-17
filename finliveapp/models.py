@@ -21,7 +21,6 @@ class UserAccount(models.Model):
     def __str__(self):
         return self.user.username
 
-
 class Breed(models.Model):
     id = models.AutoField(primary_key=True)
     number = models.IntegerField(unique=True)
@@ -188,7 +187,8 @@ class Animal(models.Model):
     euid = models.CharField(max_length=256)
     name = models.CharField(max_length=128)
     breed = models.ForeignKey(Breed, on_delete=models.SET_NULL, null=True)
-    gender = models.ForeignKey(Gender, on_delete=models.SET_NULL, null=True)
+    gender = models.CharField(max_length=1, choices=[("F", "Female"), ("M", "Male")], default="F")
+    #gender = models.ForeignKey(Gender, on_delete=models.SET_NULL, null=True)
     birthdate = models.DateField()
     animalid = models.IntegerField()
     rfid = models.CharField(max_length=256, default="")
@@ -203,7 +203,7 @@ class Animal(models.Model):
     modified_by = models.ForeignKey(User, related_name='animal_modified_by', on_delete=models.SET_NULL, null=True)
 
     objects = models.Manager()
-    api = managers.ApiManager()
+    api = managers.AnimalManager()
 
     class Meta:
         db_table = 'animal'
@@ -211,7 +211,7 @@ class Animal(models.Model):
 
     class Api:
         fields = ('euid', 'animalid', 'barn__farmid', 'name', 'breed__abbreviation',
-                  'gender__abbreviation', 'organization__name', 'birthdate', 'arrivaldate',
+                  'gender', 'organization__name', 'birthdate', 'arrivaldate',
                   'departuredate', 'departurereason')
 
     def __str__(self):
@@ -363,6 +363,13 @@ class Feeding(models.Model):
     created_by = models.ForeignKey(User, related_name='feeding_created_by', on_delete=models.SET_NULL, null=True)
     modified = models.DateTimeField(auto_now=True)
     modified_by = models.ForeignKey(User, related_name='feeding_modified_by', on_delete=models.SET_NULL, null=True)
+
+    objects = models.Manager()
+    api = managers.ApiManager()
+
+    class Api:
+        fields = ('animal__euid', 'animal__animalid', 'barn__farmid', 'start_time',
+                  'end_time', 'visit_duration', 'feed_weight', 'feed_consumption', 'feed_name')
 
     class Meta:
         db_table = 'feeding'

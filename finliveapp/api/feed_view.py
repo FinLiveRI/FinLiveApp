@@ -82,8 +82,9 @@ class FeedingView(APIView):
         try:
             serializer.bulk_create()
             return Response({}, status=status.HTTP_201_CREATED)
-        except:
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            #print(e)
+            return Response({}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         #serializer = NewFeedingSerializer(data=feedinglist, **{'editor': user, 'organization': organizationid}, many=True)
         #if serializer.is_valid():

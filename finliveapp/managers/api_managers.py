@@ -12,12 +12,12 @@ class ApiQuerySet(models.QuerySet):
         for f in self.model.Api.fields:
             if '__' in f:
                 table, name = f.split('__')
-                if table == "barn":
-                    n = name
-                else:
-                    #n = table + name
+                if table in ["breed", "organization"]:
                     n = table.upper()
-                #n = [1]
+                    #print(n)
+                else:
+                    #n = '{0}_{1}'.format(table, name)
+                    n = name
                 # Check for duplicate values
                 #if n in new_fields:
                 #    n = f.replace('__', '_')
@@ -27,14 +27,18 @@ class ApiQuerySet(models.QuerySet):
                 new_fields.append(f)
         return new_fields, annotations
 
+    def _lower_keys(self, d):
+        return {k.lower(): v for k, v in d.items()}
+
     def api_values(self):
         fields, annotations = self._get_api_fields()
         return self.values(*fields, **annotations)
 
     def to_dataframe(self):
         fields, annotations = self._get_api_fields()
-        qs = self.values(*fields, **annotations)
-        return pd.DataFrame.from_records(list(qs), columns=fields, coerce_float=True)
+        qs = self.api_values()
+        lc_fields = [f.lower() for f in fields]
+        return pd.DataFrame.from_records(list(qs), columns=lc_fields, coerce_float=True)
 
 """Model manager for managing API queries"""
 class ApiManager(models.Manager):
@@ -42,6 +46,20 @@ class ApiManager(models.Manager):
     def get_queryset(self):
         return ApiQuerySet(self.model)
 
+    def api_values(self):
+        return self.get_queryset().api_values()
+
     def to_dataframe(self):
         return self.get_queryset().to_dataframe()
 
+class AnimalQuerySet(ApiQuerySet):
+
+    def api_values(self):
+        fields, annotations = self._get_api_fields()
+        qs = self.values(*fields, **annotations)
+        return list(map(self._lower_keys, qs))
+
+class AnimalManager(ApiManager):
+
+    def get_queryset(self):
+        return AnimalQuerySet(self.model)
