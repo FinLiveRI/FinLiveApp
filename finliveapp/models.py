@@ -21,7 +21,6 @@ class UserAccount(models.Model):
     def __str__(self):
         return self.user.username
 
-
 class Breed(models.Model):
     id = models.AutoField(primary_key=True)
     number = models.IntegerField(unique=True)
@@ -188,7 +187,8 @@ class Animal(models.Model):
     euid = models.CharField(max_length=256)
     name = models.CharField(max_length=128)
     breed = models.ForeignKey(Breed, on_delete=models.SET_NULL, null=True)
-    gender = models.ForeignKey(Gender, on_delete=models.SET_NULL, null=True)
+    gender = models.CharField(max_length=1, choices=[("F", "Female"), ("M", "Male")], default="F")
+    #gender = models.ForeignKey(Gender, on_delete=models.SET_NULL, null=True)
     birthdate = models.DateField()
     animalid = models.IntegerField()
     rfid = models.CharField(max_length=256, default="")
@@ -202,9 +202,17 @@ class Animal(models.Model):
     modified = models.DateTimeField(auto_now=True)
     modified_by = models.ForeignKey(User, related_name='animal_modified_by', on_delete=models.SET_NULL, null=True)
 
+    objects = models.Manager()
+    api = managers.AnimalManager()
+
     class Meta:
         db_table = 'animal'
         constraints = [UniqueConstraint(fields=['euid', 'organization'], name='euid_organization_unique')]
+
+    class Api:
+        fields = ('euid', 'animalid', 'barn__farmid', 'name', 'breed__abbreviation',
+                  'gender', 'organization__name', 'birthdate', 'arrivaldate',
+                  'departuredate', 'departurereason')
 
     def __str__(self):
         return self.name
@@ -342,8 +350,8 @@ class Feeding(models.Model):
     id = models.AutoField(primary_key=True)
     equipment = models.ForeignKey(Equipment, on_delete=models.SET_NULL, null=True)
     animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
-    visit_start_time = models.DateTimeField()
-    visit_end_time = models.DateTimeField(null=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True)
     visit_duration = models.IntegerField(blank=True, null=True)
     feed_weight = models.DecimalField(max_digits=6, decimal_places=3)
     feed_consumption = models.DecimalField(max_digits=6, decimal_places=3)
@@ -356,10 +364,17 @@ class Feeding(models.Model):
     modified = models.DateTimeField(auto_now=True)
     modified_by = models.ForeignKey(User, related_name='feeding_modified_by', on_delete=models.SET_NULL, null=True)
 
+    objects = models.Manager()
+    api = managers.ApiManager()
+
+    class Api:
+        fields = ('animal__euid', 'animal__animalid', 'barn__farmid', 'start_time',
+                  'end_time', 'visit_duration', 'feed_weight', 'feed_consumption', 'feed_name')
+
     class Meta:
         db_table = 'feeding'
         constraints = [
-                models.UniqueConstraint(fields=['animal', 'visit_start_time'], name="unique visit")]
+                models.UniqueConstraint(fields=['animal', 'start_time'], name="unique visit")]
 
 class Milking_Event(models.Model):
     id = models.AutoField(primary_key=True)

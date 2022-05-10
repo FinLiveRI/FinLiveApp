@@ -1,4 +1,5 @@
 from django.db import IntegrityError, transaction
+from django.db.models import F
 from django.shortcuts import get_object_or_404
 from finliveapp.common.utils import dictTolist
 from finliveapp.decorators.access import check_user_or_apikey
@@ -29,7 +30,8 @@ class Animals(APIView):
                         organization = get_object_or_404(Organization, name=animal.get('organization').lower())
                     barn = get_object_or_404(Barn, farmid=animal.get('farmid'))
                     breed = get_object_or_404(Breed, abbreviation=animal.get('breed'))
-                    gender = get_object_or_404(Gender, abbreviation=animal.get('gender'))
+                    #gender = get_object_or_404(Gender, abbreviation=animal.get('gender'))
+                    gender = animal.get("gender")
 
                     serializer = NewAnimalSerializer(data=animal)
                     if serializer.is_valid():
@@ -39,12 +41,13 @@ class Animals(APIView):
                         serializer.validated_data['gender'] = gender
                         serializer.validated_data['created_by'] = user
                         serializer.validated_data['modified_by'] = user
-                        new_animal = Animal.objects.create(**serializer.validated_data)
+                        new_animal, created = Animal.objects.update_or_create(euid=animal.get('euid'),
+                                                                              barn__farmid=animal.get('farmid'),
+                                                                              defaults=serializer.validated_data)
                         result.append(new_animal)
                     else:
                         raise Exception(serializer.errors)
-            serializer = AnimalViewSerializer(result, many=True)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({'status': 'OK'}, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({'error': 'Animal creation failed'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -52,11 +55,10 @@ class Animals(APIView):
     def get(self, request, *args, **kwargs):
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         farmid = self.request.META.get('HTTP_X_FARM', None)
-        animals = Animal.objects.filter(organization__id=organizationid).select_related()
+        animals = Animal.api.filter(organization__id=organizationid).select_related()
         if (farmid is not None) and (farmid != "null"):
             animals = animals.filter(barn__farmid=int(farmid))
-        serializer = AnimalViewSerializer(animals, many=True)
-        return Response(serializer.data)
+        return Response(animals.api_values())
 
 class AnimalView(APIView):
     @check_user_or_apikey()

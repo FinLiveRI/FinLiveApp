@@ -20,7 +20,7 @@ class BulkFeedingSerializer(object):
         self.organizationid = organizationid
         self.data = data
         self.farmid = farmid
-        self.fields = ('equipment', 'animal', 'visit_start_time', 'visit_end_time',
+        self.fields = ('equipment', 'animal', 'start_time', 'end_time',
                   'visit_duration', 'feed_weight', 'feed_consumption', 'feed_name', 'organization', 'barn')
 
     def bulk_create(self):
@@ -52,9 +52,9 @@ class FeedingSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         if 'visitstarttime' in data:
-            data['visit_start_time'] = data.pop('visitstarttime')
+            data['start_time'] = data.pop('visitstarttime')
         if 'visitendtime' in data:
-            data['visit_end_time'] = data.pop('visitendtime')
+            data['end_time'] = data.pop('visitendtime')
         if 'visitduration' in data:
             data['visit_duration'] = data.pop('visitduration')
         if 'feedweight' in data:
@@ -115,7 +115,7 @@ class FeedingSerializer(serializers.ModelSerializer):
         data['modified_by'] = self.editor
 
         feeding, created = Feeding.objects.update_or_create(
-            animal_id=data.get('animal', None), visit_start_time=data.get('visit_start_time', None),
+            animal_id=data.get('animal', None), visit_start_time=data.get('start_time', None),
             defaults=data)
 
         return feeding
@@ -129,7 +129,7 @@ class FeedingSerializer(serializers.ModelSerializer):
 class NewFeedingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feeding
-        fields = ['id', 'visit_start_time', 'visit_end_time', 'visit_duration', 'feed_weight', 'feed_consumption',
+        fields = ['id', 'start_time', 'end_time', 'visit_duration', 'feed_weight', 'feed_consumption',
                   'animal', 'equipment', 'feed', 'organization', 'created', 'created_by', 'modified', 'modified_by',
                   'barn']
         read_only_fields = ('id', 'created', 'modified')
@@ -141,9 +141,9 @@ class NewFeedingSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         if 'visitstarttime' in data:
-            data['visit_start_time'] = data.pop('visitstarttime')
+            data['start_time'] = data.pop('visitstarttime')
         if 'visitendtime' in data:
-            data['visit_end_time'] = data.pop('visitendtime')
+            data['end_time'] = data.pop('visitendtime')
         if 'visitduration' in data:
             data['visit_duration'] = data.pop('visitduration')
         if 'feedweight' in data:
@@ -209,7 +209,7 @@ class NewFeedingSerializer(serializers.ModelSerializer):
         data['modified_by'] = self.editor
 
         feeding, created = Feeding.objects.update_or_create(
-            animal=data.get('animal', None), visit_start_time=data.get('visit_start_time', None),
+            animal=data.get('animal', None), visit_start_time=data.get('start_time', None),
             defaults=data)
 
         return feeding

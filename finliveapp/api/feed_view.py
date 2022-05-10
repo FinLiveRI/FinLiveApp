@@ -82,8 +82,9 @@ class FeedingView(APIView):
         try:
             serializer.bulk_create()
             return Response({}, status=status.HTTP_201_CREATED)
-        except:
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            #print(e)
+            return Response({}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         #serializer = NewFeedingSerializer(data=feedinglist, **{'editor': user, 'organization': organizationid}, many=True)
         #if serializer.is_valid():
@@ -97,7 +98,7 @@ class FeedingView(APIView):
         organizationid = self.request.META.get('HTTP_X_ORG', None)
         farmid = self.request.META.get('HTTP_X_FARM', None)
         filter = self.request.META.get('HTTP_X_FILTER', None)
-        feeds = Feeding.objects.filter(organization_id=organizationid).order_by('-visit_start_time')
+        feeds = Feeding.objects.filter(organization_id=organizationid).order_by('-start_time')
         if filter is None:
             if farmid is not None:
                 farm = Barn.objects.get(farmid=farmid)

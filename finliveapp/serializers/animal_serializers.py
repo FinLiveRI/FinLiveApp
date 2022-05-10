@@ -22,7 +22,7 @@ class GenderSerializer(serializers.ModelSerializer):
 class AnimalSerializer(serializers.ModelSerializer):
     barn = BarnSerializer(read_only=True)
     breed = BreedSerializer(read_only=True)
-    gender = GenderSerializer(read_only=True)
+    #gender = GenderSerializer(read_only=True)
     organization = OrganizationSerializer(read_only=True)
     created_by = UserAccountSerializer(read_only=True)
     modified_by = UserAccountSerializer(read_only=True)
@@ -38,7 +38,7 @@ class AnimalViewSerializer(serializers.ModelSerializer):
     breed = serializers.SlugRelatedField(slug_field='name', read_only=True)
     barn = serializers.SlugRelatedField(slug_field='farmid', read_only=True)
     organization = serializers.SlugRelatedField(slug_field='name', read_only=True)
-    gender = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    #gender = serializers.SlugRelatedField(slug_field='name', read_only=True)
     #created_by = serializers.SlugRelatedField(slug_field='user.username', read_only=True)
     #modified_by = serializers.SlugRelatedField(slug_field='user.username', read_only=True)
 
@@ -56,7 +56,7 @@ class AnimalViewSerializer(serializers.ModelSerializer):
 
 class NewAnimalSerializer(serializers.Serializer):
     euid = serializers.CharField(allow_blank=False, max_length=256)
-    name = serializers.CharField(allow_blank=False, max_length=128)
+    name = serializers.CharField(allow_blank=True, max_length=128)
     birthdate = serializers.DateField()
     animalid = serializers.IntegerField()
     rfid = serializers.CharField(max_length=256, required=False)
@@ -69,8 +69,10 @@ class NewAnimalSerializer(serializers.Serializer):
         return data
 
     def to_internal_value(self, data):
-        if 'arrivaldate' not in data:
+        if 'arrivaldate' not in data or data['arrivaldate'] is None:
             data['arrivaldate'] = data.get('birthdate')
+        if data['name'] is None:
+            data['name'] = ""
         result = super().to_internal_value(data)
         return result
 
